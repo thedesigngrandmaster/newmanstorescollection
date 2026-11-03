@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1789386965109,
+      "tag": "0000_add_receipt_url_to_orders",
+      "breakpoints": true
+    }
+  ]
+}
