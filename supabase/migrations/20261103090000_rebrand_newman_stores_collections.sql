@@ -1,7 +1,3 @@
--- Rebrand A01Luxe -> Newman Stores Collections and order prefix A01L- -> NSC-.
--- Safe to run on the existing database: historical A01L- orders remain trackable.
--- New orders must use the NSC- prefix.
-
 UPDATE public.site_settings
 SET
   brand = 'Newman Stores Collections',
