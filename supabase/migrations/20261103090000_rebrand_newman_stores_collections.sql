@@ -198,7 +198,7 @@ AS $$
   SELECT o.order_id, o.status, o.total_cents, o.created_at, o.items
   FROM public.orders o
   WHERE lower(o.order_id) = lower(trim(_order_id))
-    AND trim(_order_id) ~* '^(?:A01L|NSC)-[A-Z0-9]{4,16}$'
+    AND trim(_order_id) ~* '^(A01L|NSC)-[A-Z0-9]{4,16}$'
   LIMIT 1
 $$;
 
@@ -212,7 +212,7 @@ DECLARE
   clean_order_id text := trim(_order_id);
   clean_url text := trim(_receipt_url);
 BEGIN
-  IF clean_order_id !~* '^(?:A01L|NSC)-[A-Z0-9]{4,16}$' THEN
+  IF clean_order_id !~* '^(A01L|NSC)-[A-Z0-9]{4,16}$' THEN
     RAISE EXCEPTION 'Invalid order ID';
   END IF;
   IF clean_url = '' OR length(clean_url) > 2000 THEN
