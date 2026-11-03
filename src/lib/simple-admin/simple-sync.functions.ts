@@ -12,7 +12,7 @@ export { getSimpleStats };
  */
 export const createSyncedProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
+  .validator((data) =>
     z
       .object({
         name: z.string().trim().min(1),

@@ -18,7 +18,7 @@ export const listAdminProducts = createServerFn({ method: "GET" })
 
 export const saveAdminProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
+  .validator((data) =>
     z
       .object({
         id: z.union([   z.string().uuid(),   z.literal(""),   z.null(),   z.undefined() ]).optional(),
@@ -70,7 +70,7 @@ export const saveAdminProduct = createServerFn({ method: "POST" })
 
 export const deleteAdminProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
+  .validator((data) =>
     z
       .object({
         id: z.string().uuid("Invalid product ID"),

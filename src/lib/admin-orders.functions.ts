@@ -22,7 +22,7 @@ export const listAdminOrders = createServerFn({ method: "GET" })
 
 export const updateAdminOrderStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
+  .validator((data) =>
   z
     .object({
       id: z.string().min(1),          // now accepts order_id
@@ -70,7 +70,7 @@ if (data.status === "paid" && updatedOrder) {
 
 export const deleteAdminOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) =>
+  .validator((data) =>
     z.object({ id: z.string().min(1) }).parse(data)
   )
   .handler(async ({ data, context }) => {

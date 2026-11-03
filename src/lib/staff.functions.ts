@@ -6,7 +6,7 @@ const permissionSchema = z.enum(["content", "products", "orders", "staffs", "acc
 
 export const createStaff = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { email: string; password: string; role: "admin" | "staff"; permissions?: string[] }) =>
+  .validator((d: { email: string; password: string; role: "admin" | "staff"; permissions?: string[] }) =>
     z.object({ email: z.string().email(), password: z.string().min(6), role: z.enum(["admin", "staff"]), permissions: z.array(permissionSchema).optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -35,7 +35,7 @@ export const createStaff = createServerFn({ method: "POST" })
 
 export const updateStaffPermissions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { userId: string; role: "admin" | "staff"; permissions: string[] }) =>
+  .validator((d: { userId: string; role: "admin" | "staff"; permissions: string[] }) =>
     z.object({ userId: z.string().uuid(), role: z.enum(["admin", "staff"]), permissions: z.array(permissionSchema) }).parse(d),
   )
   .handler(async ({ data, context }) => {
@@ -57,7 +57,7 @@ export const updateStaffPermissions = createServerFn({ method: "POST" })
 
 export const removeStaff = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { userId: string }) => z.object({ userId: z.string().uuid() }).parse(d))
+  .validator((d: { userId: string }) => z.object({ userId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", {
       _user_id: context.userId,
