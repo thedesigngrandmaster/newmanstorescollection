@@ -28,6 +28,9 @@ export default defineConfig({
         includeAssets: ["favicon.ico", "manifest.webmanifest"],
         manifest: false, // manifest is a hand-written file in public/
         workbox: {
+          cleanupOutdatedCaches: true,
+          skipWaiting: true,
+          clientsClaim: true,
           globPatterns: ["**/*.{js,css,ico,png,woff,woff2,ttf}"],
           navigateFallbackDenylist: [/^\/~oauth/],
           runtimeCaching: [
