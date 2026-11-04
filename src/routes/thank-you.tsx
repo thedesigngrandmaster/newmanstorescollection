@@ -243,7 +243,7 @@ function ThankYou() {
             <PaystackButton
               orderId={order}
               amount={total / 100}
-              email={customerEmail || "customer@newmanstorescollections.com"}
+              email={customerEmail || "newmanstorescollections@gmail.com"}
               customerName={customerName || "Customer"}
               onSuccess={(reference) => {
                 toast.success("Payment successful! We will confirm shortly.");

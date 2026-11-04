@@ -6,13 +6,24 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Icon } from "@/components/site/Icon";
 import { formatMoney } from "@/lib/format";
 import { toast } from "sonner";
-import { deleteAdminOrder, listAdminOrders, updateAdminOrderStatus } from "@/lib/admin-orders.functions";
+import {
+  deleteAdminOrder,
+  listAdminOrders,
+  updateAdminOrderStatus,
+} from "@/lib/admin-orders.functions";
 
 type Order = {
   id: string;
   order_id: string;
   customer: { name: string; email: string; phone: string; address: string };
-  items: { name: string; image: string; qty: number; price_cents: number; size?: string | null; product_id: string }[];
+  items: {
+    name: string;
+    image: string;
+    qty: number;
+    price_cents: number;
+    size?: string | null;
+    product_id: string;
+  }[];
   total_cents: number;
   status: string;
   created_at: string;
@@ -59,13 +70,15 @@ export function OrdersTab() {
       // Also update the currently open modal
       if (openOrder) {
         const fresh = (await listOrders()) as unknown as Order[];
-        const updated = fresh.find(o => o.id === openOrder.id || o.order_id === openOrder.order_id);
+        const updated = fresh.find(
+          (o) => o.id === openOrder.id || o.order_id === openOrder.order_id,
+        );
         if (updated) setOpenOrder(updated);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Status update failed");
     }
-}
+  }
   async function removeOrder(id: string) {
     if (!confirm("Delete this order permanently?")) return;
     try {
@@ -99,12 +112,15 @@ export function OrdersTab() {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs font-semibold">{o.order_id}</span>
-                <span className={`text-[10px] uppercase rounded-full border px-2 py-0.5 ${STATUS_COLOR[o.status] ?? ""}`}>
+                <span
+                  className={`text-[10px] uppercase rounded-full border px-2 py-0.5 ${STATUS_COLOR[o.status] ?? ""}`}
+                >
                   {o.status}
                 </span>
               </div>
               <div className="text-sm truncate">
-                {o.customer?.name} <span className="text-muted-foreground">· {o.items?.length ?? 0} items</span>
+                {o.customer?.name}{" "}
+                <span className="text-muted-foreground">· {o.items?.length ?? 0} items</span>
               </div>
               <div className="text-xs text-muted-foreground">
                 {new Date(o.created_at).toLocaleString()}
@@ -129,7 +145,17 @@ export function OrdersTab() {
     </div>
   );
 }
-function OrderModal({ order, onClose, onStatus, onDelete }: { order: Order; onClose: () => void; onStatus: (s: string) => void; onDelete: () => void }) {
+function OrderModal({
+  order,
+  onClose,
+  onStatus,
+  onDelete,
+}: {
+  order: Order;
+  onClose: () => void;
+  onStatus: (s: string) => void;
+  onDelete: () => void;
+}) {
   const productIds = useMemo(
     () => Array.from(new Set((order.items ?? []).map((i) => i.product_id).filter(Boolean))),
     [order],
@@ -138,19 +164,24 @@ function OrderModal({ order, onClose, onStatus, onDelete }: { order: Order; onCl
     queryKey: ["order-cc", order.id, productIds],
     enabled: productIds.length > 0,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id,cc")
-        .in("id", productIds);
+      const { data, error } = await supabase.from("products").select("id,cc").in("id", productIds);
       if (error) throw error;
       const map: Record<string, string | null> = {};
-      (data ?? []).forEach((r: { id: string; cc: string | null }) => { map[r.id] = r.cc; });
+      (data ?? []).forEach((r: { id: string; cc: string | null }) => {
+        map[r.id] = r.cc;
+      });
       return map;
     },
   });
   return (
     <>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/50 z-50" />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-black/50 z-50"
+      />
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -165,7 +196,10 @@ function OrderModal({ order, onClose, onStatus, onDelete }: { order: Order; onCl
               {new Date(order.created_at).toLocaleString()}
             </p>
           </div>
-          <button onClick={onClose} className="h-9 w-9 grid place-items-center rounded-full hover:bg-foreground/5">
+          <button
+            onClick={onClose}
+            className="h-9 w-9 grid place-items-center rounded-full hover:bg-foreground/5"
+          >
             <Icon name="close-outline" size={22} />
           </button>
         </div>
@@ -175,8 +209,12 @@ function OrderModal({ order, onClose, onStatus, onDelete }: { order: Order; onCl
             <div className="font-medium">{order.customer?.name}</div>
             <div className="text-sm text-muted-foreground">{order.customer?.email}</div>
             <div className="text-sm text-muted-foreground">{order.customer?.phone}</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2">Location</div>
-            <div className="text-sm text-muted-foreground whitespace-pre-line">{order.customer?.address}</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2">
+              Location
+            </div>
+            <div className="text-sm text-muted-foreground whitespace-pre-line">
+              {order.customer?.address}
+            </div>
           </div>
         </div>
         <div className="rounded-2xl bg-card border border-border p-4 mb-3">
@@ -186,7 +224,11 @@ function OrderModal({ order, onClose, onStatus, onDelete }: { order: Order; onCl
               const cc = ccMap?.[i.product_id];
               return (
                 <div key={idx} className="flex items-center gap-3">
-                  <img src={i.image} alt="" className="h-12 w-12 rounded-lg object-cover bg-muted" />
+                  <img
+                    src={i.image}
+                    alt=""
+                    className="h-12 w-12 rounded-lg object-cover bg-muted"
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{i.name}</div>
                     <div className="text-xs text-muted-foreground">
@@ -216,7 +258,9 @@ function OrderModal({ order, onClose, onStatus, onDelete }: { order: Order; onCl
                 key={s}
                 onClick={() => onStatus(s)}
                 className={`text-xs px-3 py-1.5 rounded-full border ${
-                  order.status === s ? "bg-primary text-primary-foreground border-primary" : "hover:bg-foreground/5"
+                  order.status === s
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "hover:bg-foreground/5"
                 }`}
               >
                 {s}
@@ -237,7 +281,10 @@ function OrderModal({ order, onClose, onStatus, onDelete }: { order: Order; onCl
           </div>
         )}
 
-        <button onClick={onDelete} className="mt-5 w-full border border-destructive text-destructive px-4 py-2 text-sm font-bold uppercase hover:bg-destructive/10 inline-flex items-center justify-center gap-2">
+        <button
+          onClick={onDelete}
+          className="mt-5 w-full border border-destructive text-destructive px-4 py-2 text-sm font-bold uppercase hover:bg-destructive/10 inline-flex items-center justify-center gap-2"
+        >
           <Icon name="trash-outline" size={16} /> Delete order
         </button>
       </motion.div>

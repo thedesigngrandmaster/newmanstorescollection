@@ -10,7 +10,14 @@ import { Icon } from "@/components/site/Icon";
 import { deleteAdminOrder, listAdminOrders } from "@/lib/admin-orders.functions";
 import { toast } from "sonner";
 
-type Order = { id: string; order_id: string; total_cents: number; status: string; created_at: string; customer: { name?: string; email?: string } };
+type Order = {
+  id: string;
+  order_id: string;
+  total_cents: number;
+  status: string;
+  created_at: string;
+  customer: { name?: string; email?: string };
+};
 
 export function AccountsTab() {
   const qc = useQueryClient();
@@ -35,7 +42,9 @@ export function AccountsTab() {
     return {
       revenue: paid.reduce((s, o) => s + o.total_cents, 0),
       count: paid.length,
-      pending: filtered.filter((o) => o.status === "pending").reduce((s, o) => s + o.total_cents, 0),
+      pending: filtered
+        .filter((o) => o.status === "pending")
+        .reduce((s, o) => s + o.total_cents, 0),
     };
   }, [filtered]);
 
@@ -98,16 +107,41 @@ export function AccountsTab() {
       <div className="rounded-2xl bg-card border border-border p-4 flex flex-wrap items-end gap-3">
         <div>
           <label className="text-xs uppercase text-muted-foreground">From</label>
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1 rounded-xl border border-border bg-background px-3 py-2 text-sm" />
+          <input
+            type="date"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            className="mt-1 rounded-xl border border-border bg-background px-3 py-2 text-sm"
+          />
         </div>
         <div>
           <label className="text-xs uppercase text-muted-foreground">To</label>
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 rounded-xl border border-border bg-background px-3 py-2 text-sm" />
+          <input
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            className="mt-1 rounded-xl border border-border bg-background px-3 py-2 text-sm"
+          />
         </div>
         <div className="flex gap-2 ml-auto">
-          <button onClick={exportCSV} className="rounded-full border border-border px-4 py-2 text-sm hover:bg-foreground/5 inline-flex items-center gap-2"><Icon name="download-outline" size={14} /> CSV</button>
-          <button onClick={exportXLSX} className="rounded-full border border-border px-4 py-2 text-sm hover:bg-foreground/5 inline-flex items-center gap-2"><Icon name="download-outline" size={14} /> XLSX</button>
-          <button onClick={exportPDF} className="rounded-full border border-border px-4 py-2 text-sm hover:bg-foreground/5 inline-flex items-center gap-2"><Icon name="download-outline" size={14} /> PDF</button>
+          <button
+            onClick={exportCSV}
+            className="rounded-full border border-border px-4 py-2 text-sm hover:bg-foreground/5 inline-flex items-center gap-2"
+          >
+            <Icon name="download-outline" size={14} /> CSV
+          </button>
+          <button
+            onClick={exportXLSX}
+            className="rounded-full border border-border px-4 py-2 text-sm hover:bg-foreground/5 inline-flex items-center gap-2"
+          >
+            <Icon name="download-outline" size={14} /> XLSX
+          </button>
+          <button
+            onClick={exportPDF}
+            className="rounded-full border border-border px-4 py-2 text-sm hover:bg-foreground/5 inline-flex items-center gap-2"
+          >
+            <Icon name="download-outline" size={14} /> PDF
+          </button>
         </div>
       </div>
       <div className="rounded-2xl bg-card border border-border overflow-x-auto">
@@ -129,15 +163,25 @@ export function AccountsTab() {
                 <td className="p-3">{o.customer?.name}</td>
                 <td className="p-3">{o.status}</td>
                 <td className="p-3 text-right font-medium">{formatMoney(o.total_cents)}</td>
-                <td className="p-3 text-right text-muted-foreground">{o.created_at
-    ? new Date(o.created_at).toLocaleDateString()
-    : 'N/A'}</td>
-                <td className="p-3 text-right"><button onClick={() => remove(o.id)} className="text-destructive hover:bg-destructive/10 h-8 w-8 inline-grid place-items-center" aria-label="Delete entry"><Icon name="trash-outline" size={15} /></button></td>
+                <td className="p-3 text-right text-muted-foreground">
+                  {o.created_at ? new Date(o.created_at).toLocaleDateString() : "N/A"}
+                </td>
+                <td className="p-3 text-right">
+                  <button
+                    onClick={() => remove(o.id)}
+                    className="text-destructive hover:bg-destructive/10 h-8 w-8 inline-grid place-items-center"
+                    aria-label="Delete entry"
+                  >
+                    <Icon name="trash-outline" size={15} />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {filtered.length === 0 && <div className="p-10 text-center text-muted-foreground">No entries.</div>}
+        {filtered.length === 0 && (
+          <div className="p-10 text-center text-muted-foreground">No entries.</div>
+        )}
       </div>
     </div>
   );

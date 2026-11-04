@@ -92,7 +92,7 @@ export const defaultSiteSettings: SiteSettings = {
     about: "Curated footwear for precise everyday movement.",
     address: "Lagos. Abuja. Ibadan",
     phone: "+234 902 601 6812",
-    email: "care.newmanstorescollections@gmail.com",
+    email: "newmanstorescollections@gmail.com",
     socials: { instagram: "", tiktok: "", facebook: "", whatsappChannel: "" },
     columns: [
       {

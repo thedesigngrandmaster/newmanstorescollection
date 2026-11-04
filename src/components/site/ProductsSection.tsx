@@ -8,7 +8,9 @@ import { Icon } from "./Icon";
 async function fetchProducts() {
   const { data, error } = await supabase
     .from("products")
-    .select("id,name,slug,brand,price_cents,images,stock,sold_out,category_id,subcategory_id,has_other_colors,colors")
+    .select(
+      "id,name,slug,brand,price_cents,images,stock,sold_out,category_id,subcategory_id,has_other_colors,colors",
+    )
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data as (ProductRow & { category_id: string | null; subcategory_id: string | null })[];
@@ -34,7 +36,10 @@ export function ProductsSection({
   eyebrow?: string;
 }) {
   const qc = useQueryClient();
-  const { data: products, isLoading } = useQuery({ queryKey: ["products"], queryFn: fetchProducts });
+  const { data: products, isLoading } = useQuery({
+    queryKey: ["products"],
+    queryFn: fetchProducts,
+  });
   const { data: tax } = useQuery({ queryKey: ["taxonomy"], queryFn: fetchTaxonomy });
   const [tab, setTab] = useState<string>("all");
   const [query, setQuery] = useState("");
@@ -45,10 +50,8 @@ export function ProductsSection({
   useEffect(() => {
     const ch = supabase
       .channel("products-live")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "products" },
-        () => qc.invalidateQueries({ queryKey: ["products"] }),
+      .on("postgres_changes", { event: "*", schema: "public", table: "products" }, () =>
+        qc.invalidateQueries({ queryKey: ["products"] }),
       )
       .subscribe();
     return () => {
@@ -87,12 +90,20 @@ export function ProductsSection({
         >
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
-              <div className="text-xs uppercase tracking-[0.3em] text-primary font-bold">{eyebrow}</div>
-              <h2 className="mt-2 font-display text-3xl sm:text-5xl font-black uppercase">{title}</h2>
+              <div className="text-xs uppercase tracking-[0.3em] text-primary font-bold">
+                {eyebrow}
+              </div>
+              <h2 className="mt-2 font-display text-3xl sm:text-5xl font-black uppercase">
+                {title}
+              </h2>
             </div>
             <div className="flex items-stretch gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-72">
-                <Icon name="search-outline" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Icon
+                  name="search-outline"
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}

@@ -48,7 +48,11 @@ export function CartDrawer() {
                     const k = cartKey(i);
                     return (
                       <div key={k} className="flex gap-3">
-                        <img src={i.image} alt={i.name} className="h-20 w-20 rounded-xl object-cover bg-muted" />
+                        <img
+                          src={i.image}
+                          alt={i.name}
+                          className="h-20 w-20 rounded-xl object-cover bg-muted"
+                        />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">

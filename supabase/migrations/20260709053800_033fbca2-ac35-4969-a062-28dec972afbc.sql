@@ -105,7 +105,7 @@ SET
     'about', COALESCE(footer->>'about', 'Curated footwear for precise everyday movement.'),
     'address', COALESCE(NULLIF(footer->>'address', ''), 'Lagos. Abuja. Ibadan'),
     'phone', COALESCE(NULLIF(footer->>'phone', ''), '+234 902 601 6812'),
-    'email', COALESCE(NULLIF(footer->>'email', ''), 'care.newmanstorescollections@gmail.com'),
+    'email', COALESCE(NULLIF(footer->>'email', ''), 'newmanstorescollections@gmail.com'),
     'socials', COALESCE(footer->'socials', '{"instagram":"","tiktok":"","facebook":"","whatsappChannel":""}'::jsonb),
     'columns', COALESCE(footer->'columns', '[{"title":"Quick Links","links":[{"label":"Shop","href":"/shop"},{"label":"About Newman Stores Collections","href":"/about"},{"label":"Contact","href":"/contact"}]},{"title":"Customer Care","links":[{"label":"FAQ","href":"/faq"},{"label":"Shipping & Returns","href":"/shipping-returns"},{"label":"Track Order","href":"/track-order"},{"label":"Care Instructions","href":"/care"},{"label":"Size Guide","href":"/size-guide"}]}]'::jsonb),
     'copyright', 'Copyright (c) 2026 Newman Stores Collections. All rights reserved.'
@@ -118,7 +118,7 @@ ALTER TABLE public.site_settings
   ALTER COLUMN tagline SET DEFAULT 'Curated footwear, elevated.',
   ALTER COLUMN theme SET DEFAULT '{"background":"#212121","foreground":"#F4EEE8","card":"#2A2A2A","primary":"#D4FF00","accent":"#D4FF00"}'::jsonb,
   ALTER COLUMN currency SET DEFAULT '{"symbol":"₦","code":"NGN"}'::jsonb,
-  ALTER COLUMN footer SET DEFAULT '{"about":"Curated footwear for precise everyday movement.","email":"care.newmanstorescollections@gmail.com","phone":"+234 902 601 6812","address":"Lagos. Abuja. Ibadan","columns":[{"title":"Quick Links","links":[{"label":"Shop","href":"/shop"},{"label":"About Newman Stores Collections","href":"/about"},{"label":"Contact","href":"/contact"}]},{"title":"Customer Care","links":[{"label":"FAQ","href":"/faq"},{"label":"Shipping & Returns","href":"/shipping-returns"},{"label":"Track Order","href":"/track-order"},{"label":"Care Instructions","href":"/care"},{"label":"Size Guide","href":"/size-guide"}]}],"socials":{"instagram":"","tiktok":"","facebook":"","whatsappChannel":""},"copyright":"Copyright (c) 2026 Newman Stores Collections. All rights reserved."}'::jsonb;
+  ALTER COLUMN footer SET DEFAULT '{"about":"Curated footwear for precise everyday movement.","email":"newmanstorescollections@gmail.com","phone":"+234 902 601 6812","address":"Lagos. Abuja. Ibadan","columns":[{"title":"Quick Links","links":[{"label":"Shop","href":"/shop"},{"label":"About Newman Stores Collections","href":"/about"},{"label":"Contact","href":"/contact"}]},{"title":"Customer Care","links":[{"label":"FAQ","href":"/faq"},{"label":"Shipping & Returns","href":"/shipping-returns"},{"label":"Track Order","href":"/track-order"},{"label":"Care Instructions","href":"/care"},{"label":"Size Guide","href":"/size-guide"}]}],"socials":{"instagram":"","tiktok":"","facebook":"","whatsappChannel":""},"copyright":"Copyright (c) 2026 Newman Stores Collections. All rights reserved."}'::jsonb;
 
 REVOKE ALL ON public.products FROM anon, authenticated;
 GRANT SELECT (id, name, slug, brand, category_id, subcategory_id, price_cents, description, sizes, stock, sold_out, images, purchases, featured, created_at, updated_at, low_stock_threshold, has_other_colors, colors) ON public.products TO anon, authenticated;

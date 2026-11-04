@@ -82,7 +82,7 @@ const MAP: Record<string, LucideIcon> = {
   "logo-whatsapp": MessageCircle,
   "search-outline": Search,
   "star-outline": Star,
-  "star": Star,
+  star: Star,
   "trash-outline": Trash2,
   "add-outline": Plus,
   "remove-outline": Minus,
@@ -125,7 +125,15 @@ const MAP: Record<string, LucideIcon> = {
 
 // Premium, elegant tote / handbag icon rendered inline as an SVG.
 // Replaces the generic shopping-bag glyph while keeping the same public API.
-function PremiumBagIcon({ size, className, style }: { size: number; className?: string; style?: CSSProperties }) {
+function PremiumBagIcon({
+  size,
+  className,
+  style,
+}: {
+  size: number;
+  className?: string;
+  style?: CSSProperties;
+}) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

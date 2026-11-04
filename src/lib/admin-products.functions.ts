@@ -5,7 +5,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const listAdminProducts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: allowed } = await context.supabase.rpc("has_permission", { _user_id: context.userId, _permission: "products" });
+    const { data: allowed } = await context.supabase.rpc("has_permission", {
+      _user_id: context.userId,
+      _permission: "products",
+    });
     if (!allowed) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
@@ -21,7 +24,7 @@ export const saveAdminProduct = createServerFn({ method: "POST" })
   .validator((data) =>
     z
       .object({
-        id: z.union([   z.string().uuid(),   z.literal(""),   z.null(),   z.undefined() ]).optional(),
+        id: z.union([z.string().uuid(), z.literal(""), z.null(), z.undefined()]).optional(),
         name: z.string().trim().min(1),
         slug: z.string().trim().min(1),
         brand: z.string().nullable(),
@@ -41,7 +44,10 @@ export const saveAdminProduct = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
-    const { data: allowed } = await context.supabase.rpc("has_permission", { _user_id: context.userId, _permission: "products" });
+    const { data: allowed } = await context.supabase.rpc("has_permission", {
+      _user_id: context.userId,
+      _permission: "products",
+    });
     if (!allowed) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const payload = {
@@ -75,10 +81,13 @@ export const deleteAdminProduct = createServerFn({ method: "POST" })
       .object({
         id: z.string().uuid("Invalid product ID"),
       })
-      .parse(data)
+      .parse(data),
   )
-   .handler(async ({ data, context }) => {
-    const { data: allowed } = await context.supabase.rpc("has_permission", { _user_id: context.userId, _permission: "products" });
+  .handler(async ({ data, context }) => {
+    const { data: allowed } = await context.supabase.rpc("has_permission", {
+      _user_id: context.userId,
+      _permission: "products",
+    });
     if (!allowed) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("products").delete().eq("id", data.id);

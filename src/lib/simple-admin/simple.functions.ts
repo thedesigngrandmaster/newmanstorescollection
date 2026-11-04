@@ -25,8 +25,14 @@ export const getSimpleStats = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const [paidRes, pendingRes, productRes] = await Promise.all([
-      supabaseAdmin.from("orders").select("total_cents").in("status", ["paid", "processing", "shipped", "delivered"]),
-      supabaseAdmin.from("orders").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabaseAdmin
+        .from("orders")
+        .select("total_cents")
+        .in("status", ["paid", "processing", "shipped", "delivered"]),
+      supabaseAdmin
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending"),
       supabaseAdmin.from("products").select("id", { count: "exact", head: true }),
     ]);
 

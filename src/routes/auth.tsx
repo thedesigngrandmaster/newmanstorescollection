@@ -54,7 +54,10 @@ function AuthPage() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md rounded-3xl bg-card border border-border p-8 shadow-xl"
       >
-        <Link to="/" className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:text-foreground">
+        <Link
+          to="/"
+          className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:text-foreground"
+        >
           <Icon name="chevron-back-outline" size={14} /> Back to shop
         </Link>
         <h1 className="mt-3 font-display text-2xl font-bold">
@@ -77,7 +80,9 @@ function AuthPage() {
             />
           </div>
           <div>
-            <label className="text-xs uppercase tracking-wider text-muted-foreground">Password</label>
+            <label className="text-xs uppercase tracking-wider text-muted-foreground">
+              Password
+            </label>
             <input
               type="password"
               required

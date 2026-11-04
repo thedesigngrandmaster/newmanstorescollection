@@ -18,7 +18,10 @@ export async function uploadMedia(file: File, folder = "uploads"): Promise<strin
   });
   if (up.error) throw up.error;
   // 10 years
-  const signed = await supabase.storage.from("media").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
-  if (signed.error || !signed.data?.signedUrl) throw signed.error ?? new Error("Failed to sign URL");
+  const signed = await supabase.storage
+    .from("media")
+    .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+  if (signed.error || !signed.data?.signedUrl)
+    throw signed.error ?? new Error("Failed to sign URL");
   return signed.data.signedUrl;
 }

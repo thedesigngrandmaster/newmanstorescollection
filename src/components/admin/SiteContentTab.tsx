@@ -77,8 +77,16 @@ export function SiteContentTab() {
             <div className="p-4 border-t border-border space-y-3">
               {s.id === "brand" && (
                 <>
-                  <Field label="Brand name" value={draft.brand} onChange={(v) => setD("brand", v)} />
-                  <Field label="Tagline" value={draft.tagline ?? ""} onChange={(v) => setD("tagline", v)} />
+                  <Field
+                    label="Brand name"
+                    value={draft.brand}
+                    onChange={(v) => setD("brand", v)}
+                  />
+                  <Field
+                    label="Tagline"
+                    value={draft.tagline ?? ""}
+                    onChange={(v) => setD("tagline", v)}
+                  />
                   <UploadField
                     label="Logo"
                     value={draft.logo_url ?? ""}
@@ -94,7 +102,9 @@ export function SiteContentTab() {
                     label="Logo position"
                     value={draft.nav_layout.logoPosition}
                     options={["left", "center", "right"]}
-                    onChange={(v) => setD("nav_layout", { ...draft.nav_layout, logoPosition: v as never })}
+                    onChange={(v) =>
+                      setD("nav_layout", { ...draft.nav_layout, logoPosition: v as never })
+                    }
                   />
                   <ToggleField
                     label="Show categories"
@@ -115,16 +125,44 @@ export function SiteContentTab() {
               )}
               {s.id === "hero" && (
                 <>
-                  <Field label="Headline" value={draft.hero.headline} onChange={(v) => setD("hero", { ...draft.hero, headline: v })} />
-                  <Field label="Subheadline" value={draft.hero.subheadline} onChange={(v) => setD("hero", { ...draft.hero, subheadline: v })} textarea />
-                  <Field label="Primary CTA text" value={draft.hero.ctaPrimary} onChange={(v) => setD("hero", { ...draft.hero, ctaPrimary: v })} />
-                  <Field label="Secondary CTA text" value={draft.hero.ctaSecondary} onChange={(v) => setD("hero", { ...draft.hero, ctaSecondary: v })} />
+                  <Field
+                    label="Headline"
+                    value={draft.hero.headline}
+                    onChange={(v) => setD("hero", { ...draft.hero, headline: v })}
+                  />
+                  <Field
+                    label="Subheadline"
+                    value={draft.hero.subheadline}
+                    onChange={(v) => setD("hero", { ...draft.hero, subheadline: v })}
+                    textarea
+                  />
+                  <Field
+                    label="Primary CTA text"
+                    value={draft.hero.ctaPrimary}
+                    onChange={(v) => setD("hero", { ...draft.hero, ctaPrimary: v })}
+                  />
+                  <Field
+                    label="Secondary CTA text"
+                    value={draft.hero.ctaSecondary}
+                    onChange={(v) => setD("hero", { ...draft.hero, ctaSecondary: v })}
+                  />
                   <UploadField
                     label="Background media (image or video)"
                     value={draft.hero.mediaUrl}
                     accept="image/*,video/*"
                     folder="hero"
-                    onChange={(v, kind) => setD("hero", { ...draft.hero, mediaUrl: v, mediaType: kind === "video" ? "video" : kind === "image" ? "image" : draft.hero.mediaType })}
+                    onChange={(v, kind) =>
+                      setD("hero", {
+                        ...draft.hero,
+                        mediaUrl: v,
+                        mediaType:
+                          kind === "video"
+                            ? "video"
+                            : kind === "image"
+                              ? "image"
+                              : draft.hero.mediaType,
+                      })
+                    }
                   />
                   <SelectField
                     label="Media type"
@@ -133,13 +171,17 @@ export function SiteContentTab() {
                     onChange={(v) => setD("hero", { ...draft.hero, mediaType: v as never })}
                   />
                   <div>
-                    <label className="text-xs uppercase tracking-wider text-muted-foreground">Overlay ({Math.round((draft.hero.overlay ?? 0) * 100)}%)</label>
+                    <label className="text-xs uppercase tracking-wider text-muted-foreground">
+                      Overlay ({Math.round((draft.hero.overlay ?? 0) * 100)}%)
+                    </label>
                     <input
                       type="range"
                       min={0}
                       max={80}
                       value={Math.round((draft.hero.overlay ?? 0) * 100)}
-                      onChange={(e) => setD("hero", { ...draft.hero, overlay: Number(e.target.value) / 100 })}
+                      onChange={(e) =>
+                        setD("hero", { ...draft.hero, overlay: Number(e.target.value) / 100 })
+                      }
                       className="w-full"
                     />
                   </div>
@@ -147,9 +189,22 @@ export function SiteContentTab() {
               )}
               {s.id === "cta" && (
                 <>
-                  <Field label="Heading" value={draft.cta.heading} onChange={(v) => setD("cta", { ...draft.cta, heading: v })} />
-                  <Field label="Sub" value={draft.cta.sub} onChange={(v) => setD("cta", { ...draft.cta, sub: v })} textarea />
-                  <Field label="Button" value={draft.cta.button} onChange={(v) => setD("cta", { ...draft.cta, button: v })} />
+                  <Field
+                    label="Heading"
+                    value={draft.cta.heading}
+                    onChange={(v) => setD("cta", { ...draft.cta, heading: v })}
+                  />
+                  <Field
+                    label="Sub"
+                    value={draft.cta.sub}
+                    onChange={(v) => setD("cta", { ...draft.cta, sub: v })}
+                    textarea
+                  />
+                  <Field
+                    label="Button"
+                    value={draft.cta.button}
+                    onChange={(v) => setD("cta", { ...draft.cta, button: v })}
+                  />
                   <UploadField
                     label="Background image"
                     value={draft.cta.mediaUrl ?? ""}
@@ -161,14 +216,56 @@ export function SiteContentTab() {
               )}
               {s.id === "footer" && (
                 <>
-                  <Field label="About" value={draft.footer.about} onChange={(v) => setD("footer", { ...draft.footer, about: v })} textarea />
-                  <Field label="Location" value={draft.footer.address} onChange={(v) => setD("footer", { ...draft.footer, address: v })} textarea />
-                  <Field label="Phone" value={draft.footer.phone} onChange={(v) => setD("footer", { ...draft.footer, phone: v })} />
-                  <Field label="Email" value={draft.footer.email} onChange={(v) => setD("footer", { ...draft.footer, email: v })} />
-                  <Field label="Instagram URL" value={draft.footer.socials.instagram ?? ""} onChange={(v) => setD("footer", { ...draft.footer, socials: { ...draft.footer.socials, instagram: v } })} />
-                  <Field label="WhatsApp Channel URL (used in footer + Join CTA)" value={draft.footer.socials.whatsappChannel ?? ""} onChange={(v) => setD("footer", { ...draft.footer, socials: { ...draft.footer.socials, whatsappChannel: v } })} />
-                  <Field label="Copyright" value={draft.footer.copyright} onChange={(v) => setD("footer", { ...draft.footer, copyright: v })} />
-                  <p className="text-xs text-muted-foreground">Column links use the default layout. Edit them in the Advanced JSON below.</p>
+                  <Field
+                    label="About"
+                    value={draft.footer.about}
+                    onChange={(v) => setD("footer", { ...draft.footer, about: v })}
+                    textarea
+                  />
+                  <Field
+                    label="Location"
+                    value={draft.footer.address}
+                    onChange={(v) => setD("footer", { ...draft.footer, address: v })}
+                    textarea
+                  />
+                  <Field
+                    label="Phone"
+                    value={draft.footer.phone}
+                    onChange={(v) => setD("footer", { ...draft.footer, phone: v })}
+                  />
+                  <Field
+                    label="Email"
+                    value={draft.footer.email}
+                    onChange={(v) => setD("footer", { ...draft.footer, email: v })}
+                  />
+                  <Field
+                    label="Instagram URL"
+                    value={draft.footer.socials.instagram ?? ""}
+                    onChange={(v) =>
+                      setD("footer", {
+                        ...draft.footer,
+                        socials: { ...draft.footer.socials, instagram: v },
+                      })
+                    }
+                  />
+                  <Field
+                    label="WhatsApp Channel URL (used in footer + Join CTA)"
+                    value={draft.footer.socials.whatsappChannel ?? ""}
+                    onChange={(v) =>
+                      setD("footer", {
+                        ...draft.footer,
+                        socials: { ...draft.footer.socials, whatsappChannel: v },
+                      })
+                    }
+                  />
+                  <Field
+                    label="Copyright"
+                    value={draft.footer.copyright}
+                    onChange={(v) => setD("footer", { ...draft.footer, copyright: v })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Column links use the default layout. Edit them in the Advanced JSON below.
+                  </p>
                   <JsonField
                     label="Footer columns (JSON)"
                     value={draft.footer.columns}
@@ -190,21 +287,58 @@ export function SiteContentTab() {
               )}
               {s.id === "payment" && (
                 <>
-                  <Field label="Bank name" value={draft.payment.bankName} onChange={(v) => setD("payment", { ...draft.payment, bankName: v })} />
-                  <Field label="Account name" value={draft.payment.accountName} onChange={(v) => setD("payment", { ...draft.payment, accountName: v })} />
-                  <Field label="Account number" value={draft.payment.accountNumber} onChange={(v) => setD("payment", { ...draft.payment, accountNumber: v })} />
-                  <Field label="WhatsApp number (with country code, digits only)" value={draft.payment.whatsappNumber} onChange={(v) => setD("payment", { ...draft.payment, whatsappNumber: v })} />
-                  <Field label="Instructions" value={draft.payment.instructions} onChange={(v) => setD("payment", { ...draft.payment, instructions: v })} textarea />
+                  <Field
+                    label="Bank name"
+                    value={draft.payment.bankName}
+                    onChange={(v) => setD("payment", { ...draft.payment, bankName: v })}
+                  />
+                  <Field
+                    label="Account name"
+                    value={draft.payment.accountName}
+                    onChange={(v) => setD("payment", { ...draft.payment, accountName: v })}
+                  />
+                  <Field
+                    label="Account number"
+                    value={draft.payment.accountNumber}
+                    onChange={(v) => setD("payment", { ...draft.payment, accountNumber: v })}
+                  />
+                  <Field
+                    label="WhatsApp number (with country code, digits only)"
+                    value={draft.payment.whatsappNumber}
+                    onChange={(v) => setD("payment", { ...draft.payment, whatsappNumber: v })}
+                  />
+                  <Field
+                    label="Instructions"
+                    value={draft.payment.instructions}
+                    onChange={(v) => setD("payment", { ...draft.payment, instructions: v })}
+                    textarea
+                  />
                   <div className="grid grid-cols-2 gap-3">
                     <Field
                       label={`Delivery fee — Lagos (${draft.currency?.symbol ?? "₦"})`}
                       value={String(Math.round((draft.payment.deliveryLagosCents ?? 200000) / 100))}
-                      onChange={(v) => setD("payment", { ...draft.payment, deliveryLagosCents: Math.max(0, Math.round(Number(v.replace(/[^\d.]/g, "")) || 0) * 100) })}
+                      onChange={(v) =>
+                        setD("payment", {
+                          ...draft.payment,
+                          deliveryLagosCents: Math.max(
+                            0,
+                            Math.round(Number(v.replace(/[^\d.]/g, "")) || 0) * 100,
+                          ),
+                        })
+                      }
                     />
                     <Field
                       label={`Delivery fee — Outside Lagos (${draft.currency?.symbol ?? "₦"}, 0 = contact)`}
                       value={String(Math.round((draft.payment.deliveryOutsideCents ?? 0) / 100))}
-                      onChange={(v) => setD("payment", { ...draft.payment, deliveryOutsideCents: Math.max(0, Math.round(Number(v.replace(/[^\d.]/g, "")) || 0) * 100) })}
+                      onChange={(v) =>
+                        setD("payment", {
+                          ...draft.payment,
+                          deliveryOutsideCents: Math.max(
+                            0,
+                            Math.round(Number(v.replace(/[^\d.]/g, "")) || 0) * 100,
+                          ),
+                        })
+                      }
                     />
                   </div>
                 </>
@@ -212,18 +346,26 @@ export function SiteContentTab() {
               {s.id === "currency" && (
                 <>
                   <p className="text-xs text-muted-foreground">
-                    This is your store's base currency. Visitors from other countries automatically see prices converted to their local currency.
+                    This is your store's base currency. Visitors from other countries automatically
+                    see prices converted to their local currency.
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     <Field
                       label="Symbol (e.g. ₦, $, £)"
                       value={draft.currency?.symbol ?? "₦"}
-                      onChange={(v) => setD("currency", { symbol: v, code: draft.currency?.code ?? "NGN" })}
+                      onChange={(v) =>
+                        setD("currency", { symbol: v, code: draft.currency?.code ?? "NGN" })
+                      }
                     />
                     <Field
                       label="ISO code (e.g. NGN, USD, GBP)"
                       value={draft.currency?.code ?? "NGN"}
-                      onChange={(v) => setD("currency", { symbol: draft.currency?.symbol ?? "₦", code: v.toUpperCase() })}
+                      onChange={(v) =>
+                        setD("currency", {
+                          symbol: draft.currency?.symbol ?? "₦",
+                          code: v.toUpperCase(),
+                        })
+                      }
                     />
                   </div>
                 </>
@@ -262,7 +404,11 @@ function UploadField({
     setBusy(true);
     try {
       const url = await uploadMedia(file, folder);
-      const kind = file.type.startsWith("video/") ? "video" : file.type.startsWith("image/") ? "image" : undefined;
+      const kind = file.type.startsWith("video/")
+        ? "video"
+        : file.type.startsWith("image/")
+          ? "image"
+          : undefined;
       onChange(url, kind);
       toast.success("Uploaded");
     } catch (e) {
@@ -307,7 +453,9 @@ function UploadField({
               Remove
             </button>
           )}
-          <div className="text-[11px] text-muted-foreground truncate">{value || "No file selected"}</div>
+          <div className="text-[11px] text-muted-foreground truncate">
+            {value || "No file selected"}
+          </div>
         </div>
       </div>
     </div>
@@ -346,7 +494,17 @@ function Field({
   );
 }
 
-function SelectField({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
+function SelectField({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+}) {
   return (
     <div>
       <label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</label>
@@ -356,14 +514,24 @@ function SelectField({ label, value, options, onChange }: { label: string; value
         className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 outline-none focus:ring-2 ring-primary/30"
       >
         {options.map((o) => (
-          <option key={o} value={o}>{o}</option>
+          <option key={o} value={o}>
+            {o}
+          </option>
         ))}
       </select>
     </div>
   );
 }
 
-function ToggleField({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+function ToggleField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <label className="flex items-center justify-between py-2">
       <span className="text-sm">{label}</span>
@@ -372,13 +540,23 @@ function ToggleField({ label, value, onChange }: { label: string; value: boolean
         onClick={() => onChange(!value)}
         className={`w-11 h-6 rounded-full relative transition-colors ${value ? "bg-primary" : "bg-foreground/20"}`}
       >
-        <span className={`absolute top-0.5 h-5 w-5 bg-white rounded-full transition-transform ${value ? "translate-x-5" : "translate-x-0.5"}`} />
+        <span
+          className={`absolute top-0.5 h-5 w-5 bg-white rounded-full transition-transform ${value ? "translate-x-5" : "translate-x-0.5"}`}
+        />
       </button>
     </label>
   );
 }
 
-function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function ColorField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <div className="flex items-center gap-3">
       <div className="flex-1">
@@ -399,7 +577,15 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
-function JsonField<T>({ label, value, onChange }: { label: string; value: T; onChange: (v: T) => void }) {
+function JsonField<T>({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  onChange: (v: T) => void;
+}) {
   const [text, setText] = useState(() => JSON.stringify(value, null, 2));
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => {

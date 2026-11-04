@@ -36,10 +36,7 @@ export function CtaBand() {
             </h3>
             <p className="mt-3 text-white/85 max-w-md">{cta?.sub ?? ""}</p>
           </div>
-          <Link
-            to="/shop"
-            className="btn-primary shrink-0"
-          >
+          <Link to="/shop" className="btn-primary shrink-0">
             {cta?.button ?? "Shop All"}
             <Icon name="arrow-forward-outline" size={18} />
           </Link>

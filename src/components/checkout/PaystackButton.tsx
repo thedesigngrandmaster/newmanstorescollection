@@ -1,9 +1,34 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+type PaystackResponse = { reference: string };
+
+type PaystackSetupOptions = {
+  key: string;
+  email: string;
+  amount: number;
+  currency: string;
+  ref: string;
+  metadata: {
+    order_id: string;
+    customer_name: string;
+    custom_fields: Array<{
+      display_name: string;
+      variable_name: string;
+      value: string;
+    }>;
+  };
+  callback: (response: PaystackResponse) => void;
+  onClose: () => void;
+};
+
+type PaystackPop = {
+  setup: (options: PaystackSetupOptions) => { openIframe: () => void };
+};
+
 declare global {
   interface Window {
-    PaystackPop: any;
+    PaystackPop?: PaystackPop;
   }
 }
 
@@ -15,13 +40,7 @@ type Props = {
   onSuccess?: (reference: string) => void;
 };
 
-export function PaystackButton({
-  orderId,
-  amount,
-  email,
-  customerName,
-  onSuccess,
-}: Props) {
+export function PaystackButton({ orderId, amount, email, customerName, onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
 
   const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
@@ -61,7 +80,7 @@ export function PaystackButton({
           },
         ],
       },
-      callback: function (response: any) {
+      callback: function (response: PaystackResponse) {
         setLoading(false);
         toast.success("Payment successful!");
         if (onSuccess) {

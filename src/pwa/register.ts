@@ -10,14 +10,17 @@ function hostnameMatchesPreview(): boolean {
   const hostname = window.location.hostname.toLowerCase();
   const previewLabel = /^(?:id-preview|preview)(?:-[a-z0-9]+)?--.+$/;
   if (
-    (hostname.endsWith(".lovable.app") || hostname.endsWith(".gpt-eng.com") || hostname.endsWith(".gptengineer.run")) &&
+    (hostname.endsWith(".lovable.app") ||
+      hostname.endsWith(".gpt-eng.com") ||
+      hostname.endsWith(".gptengineer.run")) &&
     previewLabel.test(hostname.split(".")[0])
   ) {
     return true;
   }
   if (hostname === "project--2aa01051-e61d-4ee9-8ee3-bbdb15836886-dev.lovable.app") return true;
   if (hostname === "lovableproject.com" || hostname.endsWith(".lovableproject.com")) return true;
-  if (hostname === "lovableproject-dev.com" || hostname.endsWith(".lovableproject-dev.com")) return true;
+  if (hostname === "lovableproject-dev.com" || hostname.endsWith(".lovableproject-dev.com"))
+    return true;
   if (hostname === "beta.lovable.dev" || hostname.endsWith(".beta.lovable.dev")) return true;
   return false;
 }
@@ -25,12 +28,18 @@ function hostnameMatchesPreview(): boolean {
 export async function registerServiceWorker(): Promise<void> {
   if (typeof window === "undefined") return;
   if (!import.meta.env.PROD) return unregisterAppSw();
-  if (window.location.hostname === window.parent?.location?.hostname && window.self !== window.top) {
+  if (
+    window.location.hostname === window.parent?.location?.hostname &&
+    window.self !== window.top
+  ) {
     return unregisterAppSw();
   }
   if (window.location.hostname.toLowerCase().includes("gptengineer.site")) return unregisterAppSw();
   if (hostnameMatchesPreview()) return unregisterAppSw();
-  if (new URLSearchParams(window.location.search).has("sw=off") || window.location.search.includes("sw=off")) {
+  if (
+    new URLSearchParams(window.location.search).has("sw=off") ||
+    window.location.search.includes("sw=off")
+  ) {
     return unregisterAppSw();
   }
   if (!("serviceWorker" in navigator)) return;

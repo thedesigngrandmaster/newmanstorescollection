@@ -21,7 +21,9 @@ function checkoutError(form: { name: string; email: string; phone: string; addre
   if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) missing.push("email");
   if (form.phone.trim().length < 5) missing.push("phone number");
   if (form.address.trim().length < 5) missing.push("delivery location");
-  return missing.length ? `Please, fill in your ${missing.join(", ").replace(/, ([^,]*)$/, ", and $1")}.` : null;
+  return missing.length
+    ? `Please, fill in your ${missing.join(", ").replace(/, ([^,]*)$/, ", and $1")}.`
+    : null;
 }
 
 export function CheckoutModal({ open, onClose }: { open: boolean; onClose: () => void }) {

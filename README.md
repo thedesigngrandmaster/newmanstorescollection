@@ -244,7 +244,7 @@ The following can be handed over to a buyer for an immediate head-start:
 - Live Vercel deployment (transfer project ownership)
 - Supabase project (or database export)
 - Paystack account configured for the business
-- Email: `care.newmanstorescollections@gmail.com`
+- Email: `newmanstorescollections@gmail.com`
 - Instagram: [https://instagram.com/newmanstorescollections](https://instagram.com/newmanstorescollections)
 - WhatsApp Channel: [https://www.whatsapp.com/channel/0029Vb8KvuA4NViqiVNKfU2t](https://www.whatsapp.com/channel/0029Vb8KvuA4NViqiVNKfU2t)
 - Product & order data (exportable)

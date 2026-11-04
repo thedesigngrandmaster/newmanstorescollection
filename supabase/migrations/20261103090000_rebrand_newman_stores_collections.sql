@@ -16,7 +16,7 @@ SET
   ),
   footer = COALESCE(footer, '{}'::jsonb) || jsonb_build_object(
     'about', COALESCE(NULLIF(footer->>'about', ''), 'Curated footwear for precise everyday movement.'),
-    'email', 'care.newmanstorescollections@gmail.com',
+    'email', 'newmanstorescollections@gmail.com',
     'columns', '[
       {"title":"Quick Links","links":[
         {"label":"Shop","href":"/shop"},

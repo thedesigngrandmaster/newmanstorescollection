@@ -50,7 +50,11 @@ export const createSyncedProduct = createServerFn({ method: "POST" })
       has_other_colors: data.colors.length > 0,
       colors: data.colors,
     };
-    const { data: created, error } = await supabaseAdmin.from("products").insert(payload).select("id, slug").single();
+    const { data: created, error } = await supabaseAdmin
+      .from("products")
+      .insert(payload)
+      .select("id, slug")
+      .single();
     if (error) throw error;
     return { slug: created.slug as string };
   });

@@ -6,7 +6,14 @@ import { formatMoney } from "@/lib/format";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 
-type OrderItem = { name: string; image: string; qty: number; price_cents: number; size?: string | null; product_id: string };
+type OrderItem = {
+  name: string;
+  image: string;
+  qty: number;
+  price_cents: number;
+  size?: string | null;
+  product_id: string;
+};
 type Order = {
   id: string;
   order_id: string;
@@ -16,7 +23,14 @@ type Order = {
   customer: { name?: string; email?: string; phone?: string; address?: string };
   items: OrderItem[];
 };
-type StockRow = { id: string; name: string; slug: string; stock: number; sold_out: boolean; low_stock_threshold: number };
+type StockRow = {
+  id: string;
+  name: string;
+  slug: string;
+  stock: number;
+  sold_out: boolean;
+  low_stock_threshold: number;
+};
 
 export function NotificationsTab() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -34,7 +48,9 @@ export function NotificationsTab() {
   });
 
   const soldOut = (stock ?? []).filter((p) => p.sold_out || p.stock <= 0);
-  const lowStock = (stock ?? []).filter((p) => !p.sold_out && p.stock > 0 && p.stock <= (p.low_stock_threshold ?? 3));
+  const lowStock = (stock ?? []).filter(
+    (p) => !p.sold_out && p.stock > 0 && p.stock <= (p.low_stock_threshold ?? 3),
+  );
 
   useEffect(() => {
     supabase
@@ -53,7 +69,9 @@ export function NotificationsTab() {
       .subscribe();
     const pch = supabase
       .channel("notify-products")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "products" }, () => refetch())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "products" }, () =>
+        refetch(),
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
@@ -65,66 +83,84 @@ export function NotificationsTab() {
     <div className="space-y-6">
       {(soldOut.length > 0 || lowStock.length > 0) && (
         <section className="space-y-3">
-          <h3 className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Stock Alerts</h3>
+          <h3 className="text-xs uppercase tracking-widest font-bold text-muted-foreground">
+            Stock Alerts
+          </h3>
           {soldOut.map((p) => (
-            <div key={p.id} className="border border-destructive/40 bg-destructive/5 p-4 flex items-center gap-3">
+            <div
+              key={p.id}
+              className="border border-destructive/40 bg-destructive/5 p-4 flex items-center gap-3"
+            >
               <div className="h-10 w-10 bg-destructive/15 text-destructive grid place-items-center">
                 <Icon name="warning-outline" size={18} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">Sold out · {p.name}</div>
-                <div className="text-xs text-muted-foreground">Restock or hide from the storefront.</div>
+                <div className="text-xs text-muted-foreground">
+                  Restock or hide from the storefront.
+                </div>
               </div>
-              <span className="font-mono text-xs uppercase tracking-widest text-destructive">0 left</span>
+              <span className="font-mono text-xs uppercase tracking-widest text-destructive">
+                0 left
+              </span>
             </div>
           ))}
           {lowStock.map((p) => (
-            <div key={p.id} className="border border-primary/40 bg-primary/5 p-4 flex items-center gap-3">
+            <div
+              key={p.id}
+              className="border border-primary/40 bg-primary/5 p-4 flex items-center gap-3"
+            >
               <div className="h-10 w-10 bg-primary/15 text-primary grid place-items-center">
                 <Icon name="warning-outline" size={18} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">Low stock · {p.name}</div>
-                <div className="text-xs text-muted-foreground">Threshold: {p.low_stock_threshold ?? 3}</div>
+                <div className="text-xs text-muted-foreground">
+                  Threshold: {p.low_stock_threshold ?? 3}
+                </div>
               </div>
-              <span className="font-mono text-xs uppercase tracking-widest text-primary">{p.stock} left</span>
+              <span className="font-mono text-xs uppercase tracking-widest text-primary">
+                {p.stock} left
+              </span>
             </div>
           ))}
         </section>
       )}
 
       <section className="space-y-3">
-        <h3 className="text-xs uppercase tracking-widest font-bold text-muted-foreground">Orders</h3>
-      {orders.length === 0 && (
-        <div className="bg-card border border-border p-10 text-center text-muted-foreground">
-          You'll see new order alerts here in real time.
-        </div>
-      )}
-      {orders.map((o) => (
-        <button
-          key={o.id}
-          onClick={() => setOpenOrder(o)}
-          className="w-full text-left bg-card border border-border p-4 flex items-center gap-3 hover:border-primary transition-colors"
-        >
-          <div className="h-10 w-10 bg-primary/15 text-primary grid place-items-center">
-            <Icon name="cart-outline" size={18} />
+        <h3 className="text-xs uppercase tracking-widest font-bold text-muted-foreground">
+          Orders
+        </h3>
+        {orders.length === 0 && (
+          <div className="bg-card border border-border p-10 text-center text-muted-foreground">
+            You'll see new order alerts here in real time.
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="font-medium truncate">
-              New order · <span className="font-mono">{o.order_id}</span>
+        )}
+        {orders.map((o) => (
+          <button
+            key={o.id}
+            onClick={() => setOpenOrder(o)}
+            className="w-full text-left bg-card border border-border p-4 flex items-center gap-3 hover:border-primary transition-colors"
+          >
+            <div className="h-10 w-10 bg-primary/15 text-primary grid place-items-center">
+              <Icon name="cart-outline" size={18} />
             </div>
-            <div className="text-xs text-muted-foreground">
-              {o.customer?.name ?? "Customer"} · {new Date(o.created_at).toLocaleString()}
+            <div className="flex-1 min-w-0">
+              <div className="font-medium truncate">
+                New order · <span className="font-mono">{o.order_id}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {o.customer?.name ?? "Customer"} · {new Date(o.created_at).toLocaleString()}
+              </div>
+              <div className="text-xs text-muted-foreground truncate">
+                {(o.items ?? []).length} item{(o.items ?? []).length === 1 ? "" : "s"}
+                {o.items?.[0]?.name ? ` · ${o.items[0].name}` : ""}
+                {o.items && o.items.length > 1 ? ` · +${o.items.length - 1} more` : ""}
+              </div>
             </div>
-            <div className="text-xs text-muted-foreground truncate">
-              {(o.items ?? []).length} item{(o.items ?? []).length === 1 ? "" : "s"}
-              {o.items?.[0]?.name ? ` · ${o.items[0].name}` : ""}
-              {o.items && o.items.length > 1 ? ` · +${o.items.length - 1} more` : ""}
-            </div>
-          </div>
-          <div className="font-semibold shrink-0">{formatMoney(o.total_cents)}</div>
-        </button>
-      ))}
+            <div className="font-semibold shrink-0">{formatMoney(o.total_cents)}</div>
+          </button>
+        ))}
       </section>
 
       <AnimatePresence>
@@ -146,13 +182,21 @@ function OrderPeek({ order, onClose }: { order: Order; onClose: () => void }) {
       const { data, error } = await supabase.from("products").select("id,cc").in("id", productIds);
       if (error) throw error;
       const map: Record<string, string | null> = {};
-      (data ?? []).forEach((r: { id: string; cc: string | null }) => { map[r.id] = r.cc; });
+      (data ?? []).forEach((r: { id: string; cc: string | null }) => {
+        map[r.id] = r.cc;
+      });
       return map;
     },
   });
   return (
     <>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/50 z-50" />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-black/50 z-50"
+      />
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -163,17 +207,28 @@ function OrderPeek({ order, onClose }: { order: Order; onClose: () => void }) {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-display text-xl font-bold">Order {order.order_id}</h3>
-            <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground">
+              {new Date(order.created_at).toLocaleString()}
+            </p>
           </div>
-          <button onClick={onClose} className="h-9 w-9 grid place-items-center hover:bg-foreground/5"><Icon name="close-outline" size={22} /></button>
+          <button
+            onClick={onClose}
+            className="h-9 w-9 grid place-items-center hover:bg-foreground/5"
+          >
+            <Icon name="close-outline" size={22} />
+          </button>
         </div>
         <div className="bg-card border border-border p-4 mb-3">
           <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Customer</h4>
           <div className="font-medium">{order.customer?.name}</div>
           <div className="text-sm text-muted-foreground">{order.customer?.email}</div>
           <div className="text-sm text-muted-foreground">{order.customer?.phone}</div>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2">Location</div>
-          <div className="text-sm text-muted-foreground whitespace-pre-line">{order.customer?.address}</div>
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2">
+            Location
+          </div>
+          <div className="text-sm text-muted-foreground whitespace-pre-line">
+            {order.customer?.address}
+          </div>
         </div>
         <div className="bg-card border border-border p-4">
           <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Items</h4>
@@ -185,7 +240,9 @@ function OrderPeek({ order, onClose }: { order: Order; onClose: () => void }) {
                   <img src={i.image} alt="" className="h-12 w-12 object-cover bg-muted" />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{i.name}</div>
-                    <div className="text-xs text-muted-foreground">{i.size ? `Size ${i.size} · ` : ""}Qty {i.qty}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {i.size ? `Size ${i.size} · ` : ""}Qty {i.qty}
+                    </div>
                     {cc && (
                       <div className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/40 px-1.5 py-0.5">
                         CC · {cc}

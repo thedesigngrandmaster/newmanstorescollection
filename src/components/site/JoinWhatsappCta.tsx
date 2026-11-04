@@ -22,7 +22,8 @@ export function JoinWhatsappCta() {
           Get the drop first.
         </h3>
         <p className="mt-2 text-white/85 max-w-xl mx-auto">
-          Join our WhatsApp channel — this is our newsletter. New arrivals, restocks, and members-only prices before anyone else.
+          Join our WhatsApp channel — this is our newsletter. New arrivals, restocks, and
+          members-only prices before anyone else.
         </p>
         <a
           href={url}

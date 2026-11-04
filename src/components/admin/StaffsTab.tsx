@@ -20,7 +20,7 @@ export function StaffsTab({ currentRole }: { currentRole: "admin" | "staff" }) {
   const create = useServerFn(createStaff);
   const remove = useServerFn(removeStaff);
   const updatePermissions = useServerFn(updateStaffPermissions);
-  const { data, isLoading } = useQuery({ queryKey: ["staff-list"], queryFn: () => list() });
+  const { data, isLoading, error } = useQuery({ queryKey: ["staff-list"], queryFn: () => list() });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "staff">("staff");
@@ -45,11 +45,22 @@ export function StaffsTab({ currentRole }: { currentRole: "admin" | "staff" }) {
   }
 
   async function add() {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(cleanEmail)) {
+      toast.error("Enter a full email address, e.g. newmanstorescollections@gmail.com");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters.");
+      return;
+    }
     setBusy(true);
     try {
-      const result = await create({ data: { email, password, role, permissions } });
+      const result = await create({
+        data: { email: cleanEmail, password, role, permissions },
+      });
       toast.success("Staff account created");
-      setInvite({ email, password: result.temporaryPassword, link: result.loginLink });
+      setInvite({ email: cleanEmail, password: result.temporaryPassword, link: result.loginLink });
       setEmail("");
       setPassword("");
       qc.invalidateQueries({ queryKey: ["staff-list"] });
@@ -102,7 +113,10 @@ export function StaffsTab({ currentRole }: { currentRole: "admin" | "staff" }) {
         <h3 className="font-display font-semibold mb-3">Add staff / admin</h3>
         <div className="grid sm:grid-cols-[1fr_1fr_auto_auto] gap-2">
           <input
-            placeholder="Email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="Email (e.g. name@gmail.com)"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
@@ -139,6 +153,9 @@ export function StaffsTab({ currentRole }: { currentRole: "admin" | "staff" }) {
             Add
           </button>
         </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Use the staff member's full email address. They can sign in with the password you set.
+        </p>
         {role === "staff" && (
           <div className="mt-4 grid sm:grid-cols-3 gap-2">
             {PERMISSIONS.map((p) => (
@@ -184,6 +201,16 @@ export function StaffsTab({ currentRole }: { currentRole: "admin" | "staff" }) {
 
       <div className="rounded-2xl bg-card border border-border overflow-hidden">
         {isLoading && <div className="p-6 text-muted-foreground">Loading…</div>}
+        {error && (
+          <div className="p-6 text-sm text-destructive">
+            Could not load staff: {error instanceof Error ? error.message : "Unknown error"}
+          </div>
+        )}
+        {!isLoading && !error && (data ?? []).length === 0 && (
+          <div className="p-6 text-sm text-muted-foreground">
+            No staff accounts yet. Add one above.
+          </div>
+        )}
         {(
           (data ?? []) as Array<{
             userId: string;

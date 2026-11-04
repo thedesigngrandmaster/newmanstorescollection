@@ -7,7 +7,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Icon } from "@/components/site/Icon";
 import { formatMoney, padImages, slugify } from "@/lib/format";
 import { uploadMedia } from "@/lib/upload";
-import { deleteAdminProduct, listAdminProducts, saveAdminProduct } from "@/lib/admin-products.functions";
+import {
+  deleteAdminProduct,
+  listAdminProducts,
+  saveAdminProduct,
+} from "@/lib/admin-products.functions";
 
 type Product = {
   id: string;
@@ -41,7 +45,8 @@ export function ProductsTab() {
   });
   const { data: cats } = useQuery({
     queryKey: ["admin-cats"],
-    queryFn: async () => (await supabase.from("categories").select("*").order("sort")).data as Cat[],
+    queryFn: async () =>
+      (await supabase.from("categories").select("*").order("sort")).data as Cat[],
   });
   const { data: subs } = useQuery({
     queryKey: ["admin-subs"],
@@ -97,7 +102,10 @@ export function ProductsTab() {
         {(products ?? []).map((p) => {
           const img = padImages(p.images)[0];
           return (
-            <div key={p.id} className="grid md:grid-cols-[64px_1fr_120px_100px_100px_120px] gap-3 items-center p-3 border-b border-border last:border-0">
+            <div
+              key={p.id}
+              className="grid md:grid-cols-[64px_1fr_120px_100px_100px_120px] gap-3 items-center p-3 border-b border-border last:border-0"
+            >
               <div className="h-14 w-14 rounded-xl bg-muted overflow-hidden">
                 {img && <img src={img} alt="" className="h-full w-full object-cover" />}
               </div>
@@ -115,10 +123,18 @@ export function ProductsTab() {
                 )}
               </div>
               <div className="flex justify-end gap-1">
-                <button onClick={() => setEditing(p)} aria-label="Edit" className="h-9 w-9 grid place-items-center rounded-full hover:bg-foreground/5">
+                <button
+                  onClick={() => setEditing(p)}
+                  aria-label="Edit"
+                  className="h-9 w-9 grid place-items-center rounded-full hover:bg-foreground/5"
+                >
                   <Icon name="create-outline" size={18} />
                 </button>
-                <button onClick={() => remove(p.id)} aria-label="Delete" className="h-9 w-9 grid place-items-center rounded-full hover:bg-destructive/10 text-destructive">
+                <button
+                  onClick={() => remove(p.id)}
+                  aria-label="Delete"
+                  className="h-9 w-9 grid place-items-center rounded-full hover:bg-destructive/10 text-destructive"
+                >
                   <Icon name="trash-outline" size={18} />
                 </button>
               </div>
@@ -226,7 +242,13 @@ function ProductDrawer({
 
   return (
     <>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/40 z-40"
+        onClick={onClose}
+      />
       <motion.div
         initial={{ x: "100%" }}
         animate={{ x: 0 }}
@@ -235,38 +257,89 @@ function ProductDrawer({
         className="fixed right-0 top-0 bottom-0 w-full sm:w-[520px] bg-background z-50 flex flex-col shadow-2xl"
       >
         <div className="p-5 border-b border-border flex items-center justify-between">
-          <h3 className="font-display text-lg font-semibold">{isNew ? "New product" : "Edit product"}</h3>
-          <button onClick={onClose} className="h-9 w-9 grid place-items-center rounded-full hover:bg-foreground/5">
+          <h3 className="font-display text-lg font-semibold">
+            {isNew ? "New product" : "Edit product"}
+          </h3>
+          <button
+            onClick={onClose}
+            className="h-9 w-9 grid place-items-center rounded-full hover:bg-foreground/5"
+          >
             <Icon name="close-outline" size={22} />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
           <TF label="Name" value={p.name} onChange={(v) => setP({ ...p, name: v })} />
           <TF label="Slug (optional)" value={p.slug} onChange={(v) => setP({ ...p, slug: v })} />
-          <TF label="Brand (or leave empty for unbranded)" value={p.brand ?? ""} onChange={(v) => setP({ ...p, brand: v })} />
-          <TF label="CC — Source store (internal · not shown to customers)" value={p.cc ?? ""} onChange={(v) => setP({ ...p, cc: v })} />
-          <TF label="Description" value={p.description ?? ""} onChange={(v) => setP({ ...p, description: v })} textarea />
+          <TF
+            label="Brand (or leave empty for unbranded)"
+            value={p.brand ?? ""}
+            onChange={(v) => setP({ ...p, brand: v })}
+          />
+          <TF
+            label="CC — Source store (internal · not shown to customers)"
+            value={p.cc ?? ""}
+            onChange={(v) => setP({ ...p, cc: v })}
+          />
+          <TF
+            label="Description"
+            value={p.description ?? ""}
+            onChange={(v) => setP({ ...p, description: v })}
+            textarea
+          />
           <div className="grid grid-cols-2 gap-3">
-            <PriceField label="Price (₦)" cents={p.price_cents} onChange={(v) => setP({ ...p, price_cents: v })} />
+            <PriceField
+              label="Price (₦)"
+              cents={p.price_cents}
+              onChange={(v) => setP({ ...p, price_cents: v })}
+            />
             <NF label="Stock" value={p.stock} onChange={(v) => setP({ ...p, stock: v })} />
           </div>
-          <TF label="Sizes (comma separated)" value={p.sizes.join(",")} onChange={(v) => setP({ ...p, sizes: v.split(",").map((s) => s.trim()).filter(Boolean) })} />
+          <TF
+            label="Sizes (comma separated)"
+            value={p.sizes.join(",")}
+            onChange={(v) =>
+              setP({
+                ...p,
+                sizes: v
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              })
+            }
+          />
           <ColorEditor
             enabled={p.has_other_colors}
             colors={p.colors ?? []}
-            onEnabled={(v) => setP({ ...p, has_other_colors: v, colors: v ? p.colors ?? [] : [] })}
+            onEnabled={(v) =>
+              setP({ ...p, has_other_colors: v, colors: v ? (p.colors ?? []) : [] })
+            }
             onChange={(colors) => setP({ ...p, colors })}
           />
           <div className="grid grid-cols-2 gap-3">
-            <SelectField label="Category" value={p.category_id ?? ""} options={[{ v: "", l: "—" }, ...cats.map((c) => ({ v: c.id, l: c.name }))]} onChange={(v) => setP({ ...p, category_id: v || null, subcategory_id: null })} />
-            <SelectField label="Subcategory" value={p.subcategory_id ?? ""} options={[{ v: "", l: "—" }, ...relevantSubs.map((s) => ({ v: s.id, l: s.name }))]} onChange={(v) => setP({ ...p, subcategory_id: v || null })} />
+            <SelectField
+              label="Category"
+              value={p.category_id ?? ""}
+              options={[{ v: "", l: "—" }, ...cats.map((c) => ({ v: c.id, l: c.name }))]}
+              onChange={(v) => setP({ ...p, category_id: v || null, subcategory_id: null })}
+            />
+            <SelectField
+              label="Subcategory"
+              value={p.subcategory_id ?? ""}
+              options={[{ v: "", l: "—" }, ...relevantSubs.map((s) => ({ v: s.id, l: s.name }))]}
+              onChange={(v) => setP({ ...p, subcategory_id: v || null })}
+            />
           </div>
-          <ToggleRow label="Mark as sold out" value={p.sold_out} onChange={(v) => setP({ ...p, sold_out: v })} />
-          <ToggleRow label="Featured" value={p.featured} onChange={(v) => setP({ ...p, featured: v })} />
-          <ImageUploader
-            images={p.images}
-            onChange={(imgs) => setP({ ...p, images: imgs })}
+          <ToggleRow
+            label="Mark as sold out"
+            value={p.sold_out}
+            onChange={(v) => setP({ ...p, sold_out: v })}
           />
+          <ToggleRow
+            label="Featured"
+            value={p.featured}
+            onChange={(v) => setP({ ...p, featured: v })}
+          />
+          <ImageUploader images={p.images} onChange={(imgs) => setP({ ...p, images: imgs })} />
         </div>
         <div className="p-4 border-t border-border">
           <button onClick={save} disabled={busy} className="btn-primary w-full">
@@ -278,19 +351,46 @@ function ProductDrawer({
   );
 }
 
-function TF({ label, value, onChange, textarea }: { label: string; value: string; onChange: (v: string) => void; textarea?: boolean }) {
+function TF({
+  label,
+  value,
+  onChange,
+  textarea,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  textarea?: boolean;
+}) {
   return (
     <div>
       <label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</label>
       {textarea ? (
-        <textarea rows={3} value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 outline-none focus:ring-2 ring-primary/30" />
+        <textarea
+          rows={3}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 outline-none focus:ring-2 ring-primary/30"
+        />
       ) : (
-        <input value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 outline-none focus:ring-2 ring-primary/30" />
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 outline-none focus:ring-2 ring-primary/30"
+        />
       )}
     </div>
   );
 }
-function NF({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+function NF({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+}) {
   return (
     <div>
       <label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</label>
@@ -304,7 +404,15 @@ function NF({ label, value, onChange }: { label: string; value: number; onChange
     </div>
   );
 }
-function PriceField({ label, cents, onChange }: { label: string; cents: number; onChange: (v: number) => void }) {
+function PriceField({
+  label,
+  cents,
+  onChange,
+}: {
+  label: string;
+  cents: number;
+  onChange: (v: number) => void;
+}) {
   const [value, setValue] = useState(String(Math.round((cents ?? 0) / 100)));
   useEffect(() => setValue(String(Math.round((cents ?? 0) / 100))), [cents]);
   function commit(next = value) {
@@ -359,52 +467,121 @@ function ColorEditor({
       {enabled && (
         <div className="space-y-3">
           <div className="flex flex-wrap gap-2">
-            {colors.length === 0 && <span className="text-xs text-muted-foreground">No colors added yet.</span>}
+            {colors.length === 0 && (
+              <span className="text-xs text-muted-foreground">No colors added yet.</span>
+            )}
             {colors.map((c) => (
-              <span key={c} className="inline-flex items-center gap-2 border border-border px-2 py-1 text-xs font-bold uppercase tracking-wider">
+              <span
+                key={c}
+                className="inline-flex items-center gap-2 border border-border px-2 py-1 text-xs font-bold uppercase tracking-wider"
+              >
                 <span className="h-4 w-4 border border-border" style={{ backgroundColor: c }} />
                 {c}
-                <button type="button" onClick={() => removeColor(c)} className="text-muted-foreground hover:text-destructive" aria-label={`Remove ${c}`}>
+                <button
+                  type="button"
+                  onClick={() => removeColor(c)}
+                  className="text-muted-foreground hover:text-destructive"
+                  aria-label={`Remove ${c}`}
+                >
                   <Icon name="close-outline" size={12} />
                 </button>
               </span>
             ))}
           </div>
           <div className="grid grid-cols-[48px_1fr_auto] gap-2">
-            <input type="color" value={picked} onChange={(e) => setPicked(e.target.value)} className="h-10 w-12 border border-border bg-background" aria-label="Pick color" />
-            <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Type a color name or #hex" className="rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none" />
-            <button type="button" onClick={() => addColor(typed || picked)} className="btn-primary text-sm py-2">Add</button>
+            <input
+              type="color"
+              value={picked}
+              onChange={(e) => setPicked(e.target.value)}
+              className="h-10 w-12 border border-border bg-background"
+              aria-label="Pick color"
+            />
+            <input
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              placeholder="Type a color name or #hex"
+              className="rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => addColor(typed || picked)}
+              className="btn-primary text-sm py-2"
+            >
+              Add
+            </button>
           </div>
-          <button type="button" onClick={() => addColor(picked)} className="text-xs uppercase tracking-widest text-primary font-bold">Add picked color</button>
+          <button
+            type="button"
+            onClick={() => addColor(picked)}
+            className="text-xs uppercase tracking-widest text-primary font-bold"
+          >
+            Add picked color
+          </button>
         </div>
       )}
     </div>
   );
 }
-function SelectField({ label, value, options, onChange }: { label: string; value: string; options: { v: string; l: string }[]; onChange: (v: string) => void }) {
+function SelectField({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: { v: string; l: string }[];
+  onChange: (v: string) => void;
+}) {
   return (
     <div>
       <label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</label>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 outline-none focus:ring-2 ring-primary/30">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 outline-none focus:ring-2 ring-primary/30"
+      >
         {options.map((o) => (
-          <option key={o.v} value={o.v}>{o.l}</option>
+          <option key={o.v} value={o.v}>
+            {o.l}
+          </option>
         ))}
       </select>
     </div>
   );
 }
-function ToggleRow({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+function ToggleRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <label className="flex items-center justify-between py-2">
       <span className="text-sm">{label}</span>
-      <button type="button" onClick={() => onChange(!value)} className={`w-11 h-6 rounded-full relative transition-colors ${value ? "bg-primary" : "bg-foreground/20"}`}>
-        <span className={`absolute top-0.5 h-5 w-5 bg-white rounded-full transition-transform ${value ? "translate-x-5" : "translate-x-0.5"}`} />
+      <button
+        type="button"
+        onClick={() => onChange(!value)}
+        className={`w-11 h-6 rounded-full relative transition-colors ${value ? "bg-primary" : "bg-foreground/20"}`}
+      >
+        <span
+          className={`absolute top-0.5 h-5 w-5 bg-white rounded-full transition-transform ${value ? "translate-x-5" : "translate-x-0.5"}`}
+        />
       </button>
     </label>
   );
 }
 
-function ImageUploader({ images, onChange }: { images: string[]; onChange: (v: string[]) => void }) {
+function ImageUploader({
+  images,
+  onChange,
+}: {
+  images: string[];
+  onChange: (v: string[]) => void;
+}) {
   const [busy, setBusy] = useState<number | null>(null);
   async function upload(idx: number, file: File | null) {
     if (!file) return;
@@ -427,12 +604,17 @@ function ImageUploader({ images, onChange }: { images: string[]; onChange: (v: s
   }
   return (
     <div>
-      <label className="text-xs uppercase tracking-wider text-muted-foreground">Product images (up to 4)</label>
+      <label className="text-xs uppercase tracking-wider text-muted-foreground">
+        Product images (up to 4)
+      </label>
       <div className="mt-2 grid grid-cols-4 gap-2">
         {[0, 1, 2, 3].map((i) => {
           const src = images[i];
           return (
-            <div key={i} className="relative aspect-square border border-border bg-muted/40 overflow-hidden">
+            <div
+              key={i}
+              className="relative aspect-square border border-border bg-muted/40 overflow-hidden"
+            >
               {src ? (
                 <>
                   <img src={src} alt="" className="h-full w-full object-cover" />
@@ -468,7 +650,8 @@ function ImageUploader({ images, onChange }: { images: string[]; onChange: (v: s
         })}
       </div>
       <p className="text-xs text-muted-foreground mt-2">
-        Upload up to 4 images directly from your device. If you add just one, the storefront duplicates it into the slider.
+        Upload up to 4 images directly from your device. If you add just one, the storefront
+        duplicates it into the slider.
       </p>
     </div>
   );
@@ -477,12 +660,18 @@ function ImageUploader({ images, onChange }: { images: string[]; onChange: (v: s
 function CatManager({ cats, subs }: { cats: Cat[]; subs: Sub[] }) {
   const [open, setOpen] = useState(false);
   const [newCat, setNewCat] = useState("");
-  const [newSub, setNewSub] = useState<{ name: string; category_id: string; kind: string }>({ name: "", category_id: "", kind: "type" });
+  const [newSub, setNewSub] = useState<{ name: string; category_id: string; kind: string }>({
+    name: "",
+    category_id: "",
+    kind: "type",
+  });
   const qc = useQueryClient();
 
   async function addCat() {
     if (!newCat.trim()) return;
-    const { error } = await supabase.from("categories").insert({ name: newCat.trim(), slug: slugify(newCat), sort: cats.length });
+    const { error } = await supabase
+      .from("categories")
+      .insert({ name: newCat.trim(), slug: slugify(newCat), sort: cats.length });
     if (error) toast.error(error.message);
     else {
       setNewCat("");
@@ -497,7 +686,12 @@ function CatManager({ cats, subs }: { cats: Cat[]; subs: Sub[] }) {
   }
   async function addSub() {
     if (!newSub.name.trim() || !newSub.category_id) return;
-    const { error } = await supabase.from("subcategories").insert({ name: newSub.name.trim(), slug: slugify(newSub.name), category_id: newSub.category_id, kind: newSub.kind });
+    const { error } = await supabase.from("subcategories").insert({
+      name: newSub.name.trim(),
+      slug: slugify(newSub.name),
+      category_id: newSub.category_id,
+      kind: newSub.kind,
+    });
     if (error) toast.error(error.message);
     else {
       setNewSub({ name: "", category_id: newSub.category_id, kind: newSub.kind });
@@ -526,15 +720,30 @@ function CatManager({ cats, subs }: { cats: Cat[]; subs: Sub[] }) {
             <h4 className="font-semibold text-sm mb-2">Categories</h4>
             <div className="flex flex-wrap gap-2 mb-2">
               {cats.map((c) => (
-                <span key={c.id} className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm">
+                <span
+                  key={c.id}
+                  className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm"
+                >
                   {c.name}
-                  <button onClick={() => delCat(c.id)} className="text-muted-foreground hover:text-destructive"><Icon name="close-outline" size={14} /></button>
+                  <button
+                    onClick={() => delCat(c.id)}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <Icon name="close-outline" size={14} />
+                  </button>
                 </span>
               ))}
             </div>
             <div className="flex gap-2">
-              <input value={newCat} onChange={(e) => setNewCat(e.target.value)} placeholder="New category" className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none" />
-              <button onClick={addCat} className="btn-primary text-sm py-2">Add</button>
+              <input
+                value={newCat}
+                onChange={(e) => setNewCat(e.target.value)}
+                placeholder="New category"
+                className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+              />
+              <button onClick={addCat} className="btn-primary text-sm py-2">
+                Add
+              </button>
             </div>
           </div>
           <div>
@@ -543,24 +752,52 @@ function CatManager({ cats, subs }: { cats: Cat[]; subs: Sub[] }) {
               {subs.map((s) => {
                 const cat = cats.find((c) => c.id === s.category_id);
                 return (
-                  <span key={s.id} className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs">
-                    <span className="text-muted-foreground">{cat?.name}/</span>{s.name} <span className="text-muted-foreground">({s.kind})</span>
-                    <button onClick={() => delSub(s.id)} className="text-muted-foreground hover:text-destructive"><Icon name="close-outline" size={12} /></button>
+                  <span
+                    key={s.id}
+                    className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs"
+                  >
+                    <span className="text-muted-foreground">{cat?.name}/</span>
+                    {s.name} <span className="text-muted-foreground">({s.kind})</span>
+                    <button
+                      onClick={() => delSub(s.id)}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <Icon name="close-outline" size={12} />
+                    </button>
                   </span>
                 );
               })}
             </div>
             <div className="grid sm:grid-cols-[1fr_1fr_120px_auto] gap-2">
-              <input value={newSub.name} onChange={(e) => setNewSub({ ...newSub, name: e.target.value })} placeholder="Subcategory name" className="rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none" />
-              <select value={newSub.category_id} onChange={(e) => setNewSub({ ...newSub, category_id: e.target.value })} className="rounded-xl border border-border bg-background px-3 py-2 text-sm">
+              <input
+                value={newSub.name}
+                onChange={(e) => setNewSub({ ...newSub, name: e.target.value })}
+                placeholder="Subcategory name"
+                className="rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+              />
+              <select
+                value={newSub.category_id}
+                onChange={(e) => setNewSub({ ...newSub, category_id: e.target.value })}
+                className="rounded-xl border border-border bg-background px-3 py-2 text-sm"
+              >
                 <option value="">Choose category</option>
-                {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {cats.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
               </select>
-              <select value={newSub.kind} onChange={(e) => setNewSub({ ...newSub, kind: e.target.value })} className="rounded-xl border border-border bg-background px-3 py-2 text-sm">
+              <select
+                value={newSub.kind}
+                onChange={(e) => setNewSub({ ...newSub, kind: e.target.value })}
+                className="rounded-xl border border-border bg-background px-3 py-2 text-sm"
+              >
                 <option value="type">type</option>
                 <option value="brand">brand</option>
               </select>
-              <button onClick={addSub} className="btn-primary text-sm py-2">Add</button>
+              <button onClick={addSub} className="btn-primary text-sm py-2">
+                Add
+              </button>
             </div>
           </div>
         </div>
