@@ -32,16 +32,36 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
   };
 }
 
+function firstEnv(...names: string[]): string | undefined {
+  for (const name of names) {
+    const value = process.env[name];
+    if (value) return value;
+  }
+  return undefined;
+}
+
 function createSupabaseAdminClient() {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Accept both the server-only names and the VITE_ names used by some
+  // deployment setups. The VITE_ names are only read here on the server and
+  // are never referenced by client code.
+  const SUPABASE_URL = firstEnv("SUPABASE_URL", "VITE_SUPABASE_URL");
+  const SUPABASE_SERVICE_ROLE_KEY = firstEnv(
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_SERVICE_KEY",
+    "VITE_SUPABASE_SERVICE_ROLE_KEY",
+    "VITE_SUPABASE_SERVICE_KEY",
+  );
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     const missing = [
-      ...(!SUPABASE_URL ? ["SUPABASE_URL"] : []),
-      ...(!SUPABASE_SERVICE_ROLE_KEY ? ["SUPABASE_SERVICE_ROLE_KEY"] : []),
+      ...(!SUPABASE_URL ? ["SUPABASE_URL (or VITE_SUPABASE_URL)"] : []),
+      ...(!SUPABASE_SERVICE_ROLE_KEY
+        ? [
+            "SUPABASE_SERVICE_ROLE_KEY (or VITE_SUPABASE_SERVICE_ROLE_KEY)",
+          ]
+        : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(", ")}. Connect Supabase in Lovable Cloud.`;
+    const message = `Missing Supabase environment variable(s): ${missing.join(", ")}.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }

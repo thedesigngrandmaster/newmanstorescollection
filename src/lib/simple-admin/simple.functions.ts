@@ -22,21 +22,25 @@ export const getSimpleStats = createServerFn({ method: "GET" })
     if (roleError) throw roleError;
     if (!roles || roles.length === 0) throw new Error("You do not have admin access.");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
+    // Use the signed-in user's client instead of the service-role client. The
+    // orders/products RLS policies already allow staff and admins to read these
+    // aggregates, and this keeps the dashboard working even when the server is
+    // missing SUPABASE_SERVICE_ROLE_KEY.
     const [paidRes, pendingRes, productRes] = await Promise.all([
-      supabaseAdmin
+      context.supabase
         .from("orders")
         .select("total_cents")
         .in("status", ["paid", "processing", "shipped", "delivered"]),
-      supabaseAdmin
+      context.supabase
         .from("orders")
         .select("id", { count: "exact", head: true })
         .eq("status", "pending"),
-      supabaseAdmin.from("products").select("id", { count: "exact", head: true }),
+      context.supabase.from("products").select("id", { count: "exact", head: true }),
     ]);
 
     if (paidRes.error) throw paidRes.error;
+    if (pendingRes.error) throw pendingRes.error;
+    if (productRes.error) throw productRes.error;
 
     const revenueCents = (paidRes.data ?? []).reduce((sum, o) => sum + (o.total_cents ?? 0), 0);
     return {
