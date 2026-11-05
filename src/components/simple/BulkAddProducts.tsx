@@ -13,7 +13,7 @@ import {
 } from "@/lib/simple-admin/offlineQueue";
 import { syncQueue } from "@/lib/simple-admin/syncQueue";
 
-type DraftStatus = "draft" | QueueStatus;
+type DraftStatus = "draft" | "queued" | QueueStatus;
 
 type Draft = {
   id: string;
@@ -136,6 +136,7 @@ function parseColorsInput(value: string): string[] {
 function statusText(draft: Draft): string | null {
   switch (draft.status) {
     case "queued":
+    case "pending":
       return "Saved — waiting to send…";
     case "syncing":
       return "Sending…";
@@ -223,7 +224,9 @@ export function BulkAddProducts() {
 
   // If products were saved while offline, send them as soon as the connection
   // returns — even if the admin stays on this screen.
-  const hasQueued = drafts.some((d) => d.status === "queued" || d.status === "syncing");
+  const hasQueued = drafts.some(
+    (d) => d.status === "queued" || d.status === "pending" || d.status === "syncing",
+  );
   const autoSyncRef = useRef(false);
   useEffect(() => {
     if (!online || publishing || !hasQueued) {
@@ -239,7 +242,12 @@ export function BulkAddProducts() {
         if (cancelled) return;
         const queuedIds = new Set(
           draftsRef.current
-            .filter((draft) => draft.status === "queued" || draft.status === "syncing")
+            .filter(
+              (draft) =>
+                draft.status === "queued" ||
+                draft.status === "pending" ||
+                draft.status === "syncing",
+            )
             .map((draft) => draft.queueId)
             .filter((id): id is string => Boolean(id)),
         );

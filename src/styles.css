@@ -79,26 +79,26 @@
   /* Neo-Industrial — hard edges, high contrast, lime accent. */
   --radius: 0rem;
   --background: #212121;
-  --foreground: #F4EEE8;
+  --foreground: #f4eee8;
   --card: #2a2a2a;
-  --card-foreground: #F4EEE8;
+  --card-foreground: #f4eee8;
   --popover: #2a2a2a;
-  --popover-foreground: #F4EEE8;
-  --primary: #D4FF00;
+  --popover-foreground: #f4eee8;
+  --primary: #d4ff00;
   --primary-foreground: #0b0b0b;
-  --brand: #D4FF00;
+  --brand: #d4ff00;
   --brand-foreground: #0b0b0b;
   --secondary: #333333;
-  --secondary-foreground: #F4EEE8;
+  --secondary-foreground: #f4eee8;
   --muted: #2f2f2f;
   --muted-foreground: #b8b1a8;
-  --accent: #D4FF00;
+  --accent: #d4ff00;
   --accent-foreground: #0b0b0b;
   --destructive: #ff4d4d;
   --destructive-foreground: #ffffff;
   --border: rgba(244, 238, 232, 0.14);
   --input: rgba(244, 238, 232, 0.18);
-  --ring: #D4FF00;
+  --ring: #d4ff00;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -161,7 +161,11 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3, h4, .font-display {
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
     font-family: var(--font-display);
     letter-spacing: 0;
   }
@@ -185,10 +189,16 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  transition: transform 200ms ease, box-shadow 200ms ease;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
   box-shadow: 0 10px 30px -12px color-mix(in oklab, var(--primary) 45%, transparent);
-  &:hover { transform: translateY(-1px); }
-  &:active { transform: translateY(0); }
+  &:hover {
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 @utility touch-pinch-zoom {

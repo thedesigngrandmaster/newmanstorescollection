@@ -1,6 +1,11 @@
 # Newman Stores Collections — Sneakers, Elevated
 
+[![CI](https://github.com/thedesigngrandmaster/newmanstorescollection/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/thedesigngrandmaster/newmanstorescollection/actions/workflows/ci.yml)
+
 **Live store**: [https://newmanstorescollection.vercel.app](https://newmanstorescollection.vercel.app)
+
+Operations, releases, migrations, backups, and incident response are documented
+in [docs/DEVOPS.md](docs/DEVOPS.md).
 
 A full-stack, production-ready e-commerce platform for curated branded & unbranded footwear, built specifically for the Nigerian market (Lagos • Abuja • Ibadan).
 
