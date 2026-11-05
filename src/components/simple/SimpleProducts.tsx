@@ -9,6 +9,7 @@ import {
 import { formatBase } from "@/lib/currency";
 import { Icon } from "@/components/site/Icon";
 import { AddProductChat } from "@/components/simple/AddProductChat";
+import { BulkAddProducts } from "@/components/simple/BulkAddProducts";
 import { PRODUCTS_CACHE_KEY, readCache, writeCache } from "@/lib/simple-admin/localCache";
 
 type AdminProduct = {
@@ -30,7 +31,7 @@ type AdminProduct = {
   colors: string[] | null;
 };
 
-type Mode = "menu" | "add" | "view" | "modify" | "delete";
+type Mode = "menu" | "add" | "bulk" | "view" | "modify" | "delete";
 
 /** Products app for the simplified dashboard: Add / View / Modify / Delete. */
 export function SimpleProducts() {
@@ -40,6 +41,12 @@ export function SimpleProducts() {
     return (
       <Screen title="Add Product" onBack={() => setMode("menu")}>
         <AddProductChat />
+      </Screen>
+    );
+  if (mode === "bulk")
+    return (
+      <Screen title="Add Many Products" onBack={() => setMode("menu")}>
+        <BulkAddProducts />
       </Screen>
     );
   if (mode === "view")
@@ -52,11 +59,17 @@ export function SimpleProducts() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <ActionTile
+        icon="images-outline"
+        label="Add Many Products"
+        hint="Upload a whole batch at once"
+        onClick={() => setMode("bulk")}
+        highlight
+      />
+      <ActionTile
         icon="add-outline"
-        label="Add Product"
+        label="Add One Product"
         hint="Chat it in — even offline"
         onClick={() => setMode("add")}
-        highlight
       />
       <ActionTile
         icon="eye-outline"
