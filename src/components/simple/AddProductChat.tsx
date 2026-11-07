@@ -513,40 +513,47 @@ export function AddProductChat() {
           </div>
         </div>
       )}
-      <div className="flex items-end gap-2 border-t border-border p-3">
-        <label
-          className={`grid h-11 w-11 shrink-0 cursor-pointer place-items-center border border-border hover:bg-foreground/5 ${
-            attachments.length >= MAX_PHOTOS ? "pointer-events-none opacity-40" : ""
-          }`}
-          title={attachments.length >= MAX_PHOTOS ? "4 photos maximum" : "Attach photos (1–4)"}
-        >
-          <Icon name="image-outline" size={20} />
-          <input type="file" accept="image/*" multiple className="hidden" onChange={pickFiles} />
-        </label>
-        <textarea
-          ref={composerRef}
-          rows={1}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            // Enter inserts a new line; Ctrl/Cmd+Enter (or the send button) sends.
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-              e.preventDefault();
-              void send();
-            }
-          }}
-          aria-label="Product details"
-          placeholder="Type the product details here… (Enter for a new line)"
-          className="max-h-32 min-h-11 min-w-0 flex-1 resize-none border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
-        />
-        <button
-          onClick={() => void send()}
-          disabled={busy}
-          aria-label="Send"
-          className="grid h-11 w-11 shrink-0 place-items-center bg-primary text-primary-foreground disabled:opacity-50"
-        >
-          <Icon name="send-outline" size={18} />
-        </button>
+      <div className="border-t border-border p-3">
+        <div className="flex items-end gap-2">
+          <label
+            className={`grid h-11 w-11 shrink-0 cursor-pointer place-items-center border border-border hover:bg-foreground/5 ${
+              attachments.length >= MAX_PHOTOS ? "pointer-events-none opacity-40" : ""
+            }`}
+            title={attachments.length >= MAX_PHOTOS ? "4 photos maximum" : "Attach photos (1–4)"}
+          >
+            <Icon name="image-outline" size={20} />
+            <input type="file" accept="image/*" multiple className="hidden" onChange={pickFiles} />
+          </label>
+          <textarea
+            ref={composerRef}
+            rows={1}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              // Enter inserts a new line; Ctrl/Cmd+Enter (or the send button) sends.
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                void send();
+              }
+            }}
+            enterKeyHint="enter"
+            aria-describedby="composer-hint"
+            aria-label="Product details"
+            placeholder="Type the product details here… (Enter for a new line)"
+            className="max-h-32 min-h-11 min-w-0 flex-1 resize-none border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary"
+          />
+          <button
+            onClick={() => void send()}
+            disabled={busy}
+            aria-label="Send"
+            className="grid h-11 w-11 shrink-0 place-items-center bg-primary text-primary-foreground disabled:opacity-50"
+          >
+            <Icon name="send-outline" size={18} />
+          </button>
+        </div>
+        <div id="composer-hint" className="mt-1.5 text-[11px] text-muted-foreground">
+          Enter = new line · Ctrl/⌘ + Enter = send
+        </div>
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { formatBase } from "@/lib/currency";
 import { Icon } from "@/components/site/Icon";
 import { AddProductChat } from "@/components/simple/AddProductChat";
 import { BulkAddProducts } from "@/components/simple/BulkAddProducts";
+import { InstagramShareDialog } from "@/components/share/InstagramShareDialog";
 import { PRODUCTS_CACHE_KEY, readCache, writeCache } from "@/lib/simple-admin/localCache";
 
 type AdminProduct = {
@@ -31,9 +32,9 @@ type AdminProduct = {
   colors: string[] | null;
 };
 
-type Mode = "menu" | "add" | "bulk" | "view" | "modify" | "delete";
+type Mode = "menu" | "add" | "bulk" | "view" | "modify" | "delete" | "share";
 
-/** Products app for the simplified dashboard: Add / View / Modify / Delete. */
+/** Products app for the simplified dashboard: Add / View / Modify / Delete / Share. */
 export function SimpleProducts() {
   const [mode, setMode] = useState<Mode>("menu");
 
@@ -55,6 +56,12 @@ export function SimpleProducts() {
     return <ListScreen title="Modify Products" onBack={() => setMode("menu")} onEdit />;
   if (mode === "delete")
     return <ListScreen title="Delete Products" onBack={() => setMode("menu")} onDelete />;
+  if (mode === "share")
+    return (
+      <Screen title="Share to Instagram" onBack={() => setMode("menu")}>
+        <ShareProductsScreen />
+      </Screen>
+    );
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -76,6 +83,12 @@ export function SimpleProducts() {
         label="View Products"
         hint="See everything you sell"
         onClick={() => setMode("view")}
+      />
+      <ActionTile
+        icon="logo-instagram"
+        label="Share to Instagram"
+        hint="Pick 1–3 products for an ad post"
+        onClick={() => setMode("share")}
       />
       <ActionTile
         icon="create-outline"
@@ -168,6 +181,7 @@ function ListScreen({
   const listProducts = useServerFn(listAdminProducts);
   const qc = useQueryClient();
   const [editing, setEditing] = useState<AdminProduct | null>(null);
+  const [sharing, setSharing] = useState<AdminProduct | null>(null);
   const [online, setOnline] = useState(true);
   useEffect(() => {
     setOnline(navigator.onLine);
@@ -245,6 +259,14 @@ function ListScreen({
                 {p.colors && p.colors.length > 0 ? ` · ${p.colors.join(", ")}` : ""}
               </div>
             </div>
+            <button
+              onClick={() => setSharing(p)}
+              className="grid h-11 w-11 shrink-0 place-items-center border border-border hover:bg-foreground/5"
+              aria-label={`Share ${p.name} to Instagram`}
+              title="Share to Instagram"
+            >
+              <Icon name="logo-instagram" size={18} />
+            </button>
             {onEdit && (
               <button
                 onClick={() => setEditing(p)}
@@ -259,6 +281,104 @@ function ListScreen({
           </div>
         ))}
       </div>
+      {sharing && (
+        <InstagramShareDialog products={[sharing]} onClose={() => setSharing(null)} />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Pick one to three products and turn them into an Instagram ad post: product
+ * photo(s), a ready-to-edit caption and the shop/product link.
+ */
+function ShareProductsScreen() {
+  const listProducts = useServerFn(listAdminProducts);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [sharing, setSharing] = useState(false);
+  const { data: products, isLoading, isError } = useQuery({
+    queryKey: ["admin-products"],
+    queryFn: async () => (await listProducts()) as unknown as AdminProduct[],
+    placeholderData: () => readCache<AdminProduct[]>(PRODUCTS_CACHE_KEY),
+  });
+  useEffect(() => {
+    if (products) writeCache(PRODUCTS_CACHE_KEY, products);
+  }, [products]);
+
+  const selected = (products ?? []).filter((p) => selectedIds.includes(p.id));
+
+  const toggle = (id: string) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      return prev.length >= 3 ? prev : [...prev, id];
+    });
+  };
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-muted-foreground">
+        Choose 1–3 products. We&apos;ll prepare the photos, a caption and your shop link so you can
+        post or boost them on Instagram.
+      </p>
+      {isLoading && <div className="p-6 text-sm text-muted-foreground">Loading your products…</div>}
+      {isError && !products && (
+        <div className="border border-border bg-card p-6 text-sm text-muted-foreground">
+          We can&apos;t load products right now. Connect once so this phone can save your product
+          list, then try again.
+        </div>
+      )}
+      <div className="space-y-3">
+        {(products ?? []).map((p) => {
+          const isSelected = selectedIds.includes(p.id);
+          const isFull = selectedIds.length >= 3 && !isSelected;
+          return (
+            <button
+              key={p.id}
+              onClick={() => toggle(p.id)}
+              disabled={isFull}
+              className={`flex w-full items-center gap-3 border p-3 text-left transition-colors disabled:opacity-40 ${
+                isSelected
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card hover:bg-foreground/5"
+              }`}
+            >
+              <img
+                src={p.images?.[0] || "/favicon.png"}
+                alt={p.name}
+                className="h-16 w-16 shrink-0 object-cover"
+                loading="lazy"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-semibold">{p.name}</div>
+                <div className="text-sm">{formatBase(p.price_cents)}</div>
+                <div className="text-xs text-muted-foreground">
+                  {p.sizes && p.sizes.length > 0 ? `Sizes ${p.sizes.join(", ")}` : "No sizes listed"}
+                </div>
+              </div>
+              <span
+                className={`grid h-7 w-7 shrink-0 place-items-center border ${
+                  isSelected
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-background"
+                }`}
+                aria-hidden
+              >
+                {isSelected && <Icon name="checkmark-outline" size={16} />}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <button
+        onClick={() => setSharing(true)}
+        disabled={selected.length === 0}
+        className="btn-primary mt-4 w-full disabled:opacity-50"
+      >
+        <Icon name="logo-instagram" size={18} /> Create ad post ({selected.length}/3)
+      </button>
+      {sharing && selected.length > 0 && (
+        <InstagramShareDialog products={selected} onClose={() => setSharing(false)} />
+      )}
     </div>
   );
 }

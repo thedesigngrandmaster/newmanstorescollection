@@ -61,8 +61,12 @@ export function OrdersTab() {
 
   async function updateStatus(id: string, status: string) {
     try {
-      await updateOrderStatus({ data: { id, status: status as never } });
-      toast.success(`Status set to ${status}`);
+      const result = await updateOrderStatus({ data: { id, status: status as never } });
+      if (result?.receiptError) {
+        toast.warning(`Status set to ${status}, but the receipt could not be generated.`);
+      } else {
+        toast.success(`Status set to ${status}`);
+      }
 
       // Force refresh
       await qc.invalidateQueries({ queryKey: ["admin-orders"] });
@@ -137,7 +141,7 @@ export function OrdersTab() {
           <OrderModal
             order={openOrder}
             onClose={() => setOpenOrder(null)}
-            onStatus={(s) => updateStatus(openOrder.order_id || openOrder.id, s)}
+            onStatus={(s) => updateStatus(openOrder.id, s)}
             onDelete={() => removeOrder(openOrder.order_id || openOrder.id)}
           />
         )}

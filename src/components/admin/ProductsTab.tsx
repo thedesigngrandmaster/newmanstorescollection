@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { Icon } from "@/components/site/Icon";
+import { InstagramShareDialog } from "@/components/share/InstagramShareDialog";
 import { formatMoney, padImages, slugify } from "@/lib/format";
 import { uploadMedia } from "@/lib/upload";
 import {
@@ -53,6 +54,7 @@ export function ProductsTab() {
     queryFn: async () => (await supabase.from("subcategories").select("*")).data as Sub[],
   });
   const [editing, setEditing] = useState<Product | null>(null);
+  const [sharing, setSharing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -124,6 +126,14 @@ export function ProductsTab() {
               </div>
               <div className="flex justify-end gap-1">
                 <button
+                  onClick={() => setSharing(p)}
+                  aria-label={`Share ${p.name} to Instagram`}
+                  title="Share to Instagram"
+                  className="h-9 w-9 grid place-items-center rounded-full hover:bg-foreground/5"
+                >
+                  <Icon name="logo-instagram" size={18} />
+                </button>
+                <button
                   onClick={() => setEditing(p)}
                   aria-label="Edit"
                   className="h-9 w-9 grid place-items-center rounded-full hover:bg-foreground/5"
@@ -145,6 +155,10 @@ export function ProductsTab() {
           <div className="p-10 text-center text-muted-foreground">No products yet.</div>
         )}
       </div>
+
+      {sharing && (
+        <InstagramShareDialog products={[sharing]} onClose={() => setSharing(null)} />
+      )}
 
       <AnimatePresence>
         {target && (

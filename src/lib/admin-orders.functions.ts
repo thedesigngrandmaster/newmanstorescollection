@@ -39,35 +39,59 @@ export const updateAdminOrderStatus = createServerFn({ method: "POST" })
     if (!allowed) throw new Error("You do not have permission to manage orders.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      data.id,
+    );
+
+    // Look the order up first instead of using an `id.eq.<order_id>` OR filter:
+    // comparing a non-UUID order_id against the UUID id column makes Postgres
+    // throw `invalid input syntax for type uuid`.
+    let existing: { id: string } | null = null;
+    const byOrderId = await supabaseAdmin
+      .from("orders")
+      .select("*")
+      .eq("order_id", data.id)
+      .maybeSingle();
+    if (byOrderId.error) throw byOrderId.error;
+    existing = byOrderId.data;
+
+    if (!existing && isUuid) {
+      const byId = await supabaseAdmin.from("orders").select("*").eq("id", data.id).maybeSingle();
+      if (byId.error) throw byId.error;
+      existing = byId.data;
+    }
+
+    if (!existing) throw new Error("Order not found.");
 
     const { data: updatedOrder, error } = await supabaseAdmin
       .from("orders")
       .update({ status: data.status })
-      .or(`id.eq.${data.id},order_id.eq.${data.id}`)
+      .eq("id", existing.id)
       .select("*")
       .single();
 
     if (error) throw error;
 
-    // Generate receipt when status becomes "paid"
+    // Generating the receipt must never block the status change: the order is
+    // already updated, so surface a warning instead of reporting failure.
+    let receiptError: string | undefined;
     if (data.status === "paid" && updatedOrder) {
       try {
         const { generateAndUploadReceipt } = await import("@/lib/receipts/generateReceipt");
         const receiptUrl = await generateAndUploadReceipt(updatedOrder);
 
-        await supabaseAdmin
+        const receiptUpdate = await supabaseAdmin
           .from("orders")
           .update({ receipt_url: receiptUrl })
-          .eq("order_id", updatedOrder.order_id); // ← use order_id
+          .eq("id", updatedOrder.id);
+        if (receiptUpdate.error) throw receiptUpdate.error;
       } catch (err) {
         console.error("Receipt generation failed:", err);
-        throw new Error(
-          `Receipt generation failed: ${err instanceof Error ? err.message : String(err)}`,
-        );
+        receiptError = err instanceof Error ? err.message : String(err);
       }
     }
 
-    return { ok: true };
+    return { ok: true, receiptError };
   });
 
 export const deleteAdminOrder = createServerFn({ method: "POST" })

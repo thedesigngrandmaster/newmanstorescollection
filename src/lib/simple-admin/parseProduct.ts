@@ -41,9 +41,9 @@ const COLOR_WORDS = [
 const LETTER_SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL", "2XL", "3XL"];
 
 // Matches money however a shop owner is likely to type it:
-// ₦45,000 · N45,000 · NGN 45,000 · 45k · 45000 · 45,000
+// ₦45,000 · N45,000 · NGN 45,000 · #45,000 · 45k · 45000 · 45,000
 const MONEY_RE =
-  /(?:₦|NGN|\bN(?=\s*\d))\s*\d[\d,]*(?:\.\d+)?\s*k?|\b\d[\d,]*(?:\.\d+)?\s*k\b|\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b|\b\d{4,7}\b/gi;
+  /(?:₦|NGN|\bN(?=\s*\d)|#)\s*\d[\d,]*(?:\.\d+)?\s*k?|\b\d[\d,]*(?:\.\d+)?\s*k\b|\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b|\b\d{4,7}\b/gi;
 
 function digitsOnly(v: string): number {
   const n = Number(v.replace(/[,\s]/g, ""));
@@ -52,7 +52,7 @@ function digitsOnly(v: string): number {
 
 function amountFrom(raw: string): number | undefined {
   const cleaned = raw
-    .replace(/[₦,\s]/gi, "")
+    .replace(/[₦#,\s]/gi, "")
     .replace(/^NGN/i, "")
     .replace(/^N/i, "");
   const kSuffix = /k$/i.test(cleaned);
@@ -62,14 +62,14 @@ function amountFrom(raw: string): number | undefined {
 }
 
 function parsePrice(text: string): number | undefined {
-  // 1. Explicit currency: ₦45,000 / N45,000 / NGN 45,000 / N45k.
-  for (const m of text.matchAll(/(?:₦|NGN|\bN(?=\s*\d))\s*\d[\d,]*(?:\.\d+)?\s*k?/gi)) {
+  // 1. Explicit currency: ₦45,000 / N45,000 / NGN 45,000 / #45,000 / N45k.
+  for (const m of text.matchAll(/(?:₦|NGN|\bN(?=\s*\d)|#)\s*\d[\d,]*(?:\.\d+)?\s*k?/gi)) {
     const n = amountFrom(m[0]);
     if (n !== undefined && n >= 100) return n;
   }
   // 2. Labelled price: "price: 45,000", "cost 45000", "amount N45k".
   for (const m of text.matchAll(
-    /(?:price|cost|amount)\s*[:=-]?\s*(?:₦|NGN|N)?\s*(\d[\d,]*(?:\.\d+)?)\s*(k)?/gi,
+    /(?:price|cost|amount)\s*[:=-]?\s*(?:₦|NGN|N|#)?\s*(\d[\d,]*(?:\.\d+)?)\s*(k)?/gi,
   )) {
     const n = amountFrom(`${m[1]}${m[2] ?? ""}`);
     if (n !== undefined && n >= 100) return n;
@@ -171,7 +171,13 @@ function isPriceOnly(line: string): boolean {
 }
 
 export function parseProductFromText(rawText: string): ParsedProduct {
-  const text = rawText.trim();
+  // Normalise unicode punctuation / non-breaking spaces from phone keyboards
+  // so "₦45,000", "41–46" and "colours:" always match.
+  const text = rawText
+    .replace(/\u00a0/g, " ")
+    .replace(/[–—−]/g, "-")
+    .replace(/[’‘]/g, "'")
+    .trim();
   const lines = text
     .split("\n")
     .map((l) => l.trim())
