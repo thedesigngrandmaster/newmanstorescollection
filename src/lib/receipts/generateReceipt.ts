@@ -8,7 +8,7 @@ type ReceiptItem = {
   color?: string | null;
 };
 
-type ReceiptOrder = {
+export type ReceiptOrder = {
   order_id?: string | null;
   created_at?: string | null;
   total_cents?: number | null;
@@ -239,7 +239,7 @@ export async function generateAndUploadReceipt(order: ReceiptOrder) {
 
   const { data: signed, error: signError } = await supabaseAdmin.storage
     .from("media")
-    .createSignedUrl(`receipts/${fileName}`, 60 * 60 * 24 * 30);
+    .createSignedUrl(`receipts/${fileName}`, 60 * 60 * 24 * 365 * 10);
 
   if (signError || !signed?.signedUrl) {
     throw new Error("Failed to create signed URL");

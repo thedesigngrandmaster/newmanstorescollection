@@ -8,6 +8,7 @@ import { formatMoney } from "@/lib/format";
 import { toast } from "sonner";
 import {
   deleteAdminOrder,
+  generateAdminOrderReceipt,
   listAdminOrders,
   updateAdminOrderStatus,
 } from "@/lib/admin-orders.functions";
@@ -15,7 +16,15 @@ import {
 type Order = {
   id: string;
   order_id: string;
-  customer: { name: string; email: string; phone: string; address: string };
+  customer: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    receipt_url?: string | null;
+    receipt_uploaded_at?: string | null;
+    receipt_generated_at?: string | null;
+  };
   items: {
     name: string;
     image: string;
@@ -27,6 +36,7 @@ type Order = {
   total_cents: number;
   status: string;
   created_at: string;
+  /** Kept for older databases that added the column. */
   receipt_url?: string | null;
 };
 const STATUSES = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
@@ -41,6 +51,7 @@ export function OrdersTab() {
   const qc = useQueryClient();
   const listOrders = useServerFn(listAdminOrders);
   const updateOrderStatus = useServerFn(updateAdminOrderStatus);
+  const generateReceipt = useServerFn(generateAdminOrderReceipt);
   const deleteOrder = useServerFn(deleteAdminOrder);
   const { data: orders } = useQuery({
     queryKey: ["admin-orders"],
@@ -59,11 +70,22 @@ export function OrdersTab() {
     };
   }, [qc]);
 
+  async function refreshOpenOrder() {
+    if (!openOrder) return;
+    const fresh = (await listOrders()) as unknown as Order[];
+    const updated = fresh.find((o) => o.id === openOrder.id || o.order_id === openOrder.order_id);
+    if (updated) setOpenOrder(updated);
+  }
+
   async function updateStatus(id: string, status: string) {
     try {
       const result = await updateOrderStatus({ data: { id, status: status as never } });
       if (result?.receiptError) {
-        toast.warning(`Status set to ${status}, but the receipt could not be generated.`);
+        toast.warning(
+          `Status set to ${status}, but the receipt could not be generated. Use "Generate receipt" to retry.`,
+        );
+      } else if (result?.receiptUrl) {
+        toast.success(`Status set to ${status} · receipt ready`);
       } else {
         toast.success(`Status set to ${status}`);
       }
@@ -72,15 +94,21 @@ export function OrdersTab() {
       await qc.invalidateQueries({ queryKey: ["admin-orders"] });
 
       // Also update the currently open modal
-      if (openOrder) {
-        const fresh = (await listOrders()) as unknown as Order[];
-        const updated = fresh.find(
-          (o) => o.id === openOrder.id || o.order_id === openOrder.order_id,
-        );
-        if (updated) setOpenOrder(updated);
-      }
+      await refreshOpenOrder();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Status update failed");
+    }
+  }
+
+  async function generateReceiptForOrder() {
+    if (!openOrder) return;
+    try {
+      await generateReceipt({ data: { id: openOrder.order_id || openOrder.id } });
+      toast.success("Receipt generated");
+      await qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      await refreshOpenOrder();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not generate receipt");
     }
   }
   async function removeOrder(id: string) {
@@ -142,6 +170,7 @@ export function OrdersTab() {
             order={openOrder}
             onClose={() => setOpenOrder(null)}
             onStatus={(s) => updateStatus(openOrder.id, s)}
+            onGenerateReceipt={generateReceiptForOrder}
             onDelete={() => removeOrder(openOrder.order_id || openOrder.id)}
           />
         )}
@@ -153,13 +182,19 @@ function OrderModal({
   order,
   onClose,
   onStatus,
+  onGenerateReceipt,
   onDelete,
 }: {
   order: Order;
   onClose: () => void;
   onStatus: (s: string) => void;
+  onGenerateReceipt: () => Promise<void>;
   onDelete: () => void;
 }) {
+  const [generating, setGenerating] = useState(false);
+  const receiptUrl = order.receipt_url || order.customer?.receipt_url;
+  const canGenerateReceipt =
+    !receiptUrl && ["paid", "processing", "shipped", "delivered"].includes(order.status);
   const productIds = useMemo(
     () => Array.from(new Set((order.items ?? []).map((i) => i.product_id).filter(Boolean))),
     [order],
@@ -272,18 +307,37 @@ function OrderModal({
             ))}
           </div>
         </div>
-        {order.receipt_url && (
+        {receiptUrl ? (
           <div className="mt-4">
             <a
-              href={order.receipt_url}
+              href={receiptUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg"
             >
-              Download Receipt
+              <Icon name="download-outline" size={16} /> Download Receipt
             </a>
           </div>
-        )}
+        ) : canGenerateReceipt ? (
+          <div className="mt-4">
+            <button
+              type="button"
+              disabled={generating}
+              onClick={async () => {
+                setGenerating(true);
+                try {
+                  await onGenerateReceipt();
+                } finally {
+                  setGenerating(false);
+                }
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-primary text-primary text-sm font-medium rounded-lg disabled:opacity-60"
+            >
+              <Icon name="receipt-outline" size={16} />
+              {generating ? "Generating receipt…" : "Generate receipt"}
+            </button>
+          </div>
+        ) : null}
 
         <button
           onClick={onDelete}
