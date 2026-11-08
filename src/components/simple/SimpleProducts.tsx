@@ -5,6 +5,7 @@ import {
   deleteAdminProduct,
   listAdminProducts,
   saveAdminProduct,
+  setAdminProductSoldOut,
 } from "@/lib/admin-products.functions";
 import { formatBase } from "@/lib/currency";
 import { Icon } from "@/components/site/Icon";
@@ -12,6 +13,7 @@ import { AddProductChat } from "@/components/simple/AddProductChat";
 import { BulkAddProducts } from "@/components/simple/BulkAddProducts";
 import { InstagramShareDialog } from "@/components/share/InstagramShareDialog";
 import { PRODUCTS_CACHE_KEY, readCache, writeCache } from "@/lib/simple-admin/localCache";
+import { uploadMedia } from "@/lib/upload";
 
 type AdminProduct = {
   id: string;
@@ -442,15 +444,62 @@ function DeleteButton({ id, name, disabled }: { id: string; name: string; disabl
 
 function EditProduct({ row, onDone }: { row: AdminProduct; onDone: () => void }) {
   const saveProduct = useServerFn(saveAdminProduct);
+  const updateSoldOut = useServerFn(setAdminProductSoldOut);
+  const qc = useQueryClient();
   const [name, setName] = useState(row.name);
   const [priceNaira, setPriceNaira] = useState(String(Math.round((row.price_cents ?? 0) / 100)));
   const [stock, setStock] = useState(String(row.stock ?? 0));
   const [soldOut, setSoldOut] = useState(!!row.sold_out);
+  const [soldOutBusy, setSoldOutBusy] = useState(false);
+  const [soldOutNote, setSoldOutNote] = useState("");
   const [description, setDescription] = useState(row.description ?? "");
+  const [images, setImages] = useState(() => (row.images ?? []).filter(Boolean).slice(0, 4));
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  const toggleSoldOut = async (next: boolean) => {
+    setSoldOut(next);
+    setSoldOutBusy(true);
+    setSoldOutNote("");
+    setError("");
+    try {
+      await updateSoldOut({ data: { id: row.id, sold_out: next } });
+      setSoldOutNote(next ? "Marked as sold out." : "Made available again.");
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["simple-stats"] });
+    } catch (e) {
+      setSoldOut(!next);
+      setError(e instanceof Error ? e.message : "Could not update sold-out status. Try again.");
+    } finally {
+      setSoldOutBusy(false);
+    }
+  };
+
+  const uploadPhoto = async (index: number, file: File | null) => {
+    if (!file) return;
+    setUploadingIndex(index);
+    setError("");
+    try {
+      const url = await uploadMedia(file, "products");
+      setImages((prev) => {
+        const next = [...prev];
+        next[index] = url;
+        return next.filter(Boolean).slice(0, 4);
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not upload that photo. Try again.");
+    } finally {
+      setUploadingIndex(null);
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const save = async () => {
+    if (uploadingIndex !== null) return;
     setBusy(true);
     setError("");
     try {
@@ -470,7 +519,7 @@ function EditProduct({ row, onDone }: { row: AdminProduct; onDone: () => void })
           sizes: row.sizes ?? [],
           stock: Math.max(0, Math.round(Number(stock.replace(/\D/g, "")) || 0)),
           sold_out: soldOut,
-          images: (row.images ?? []).filter(Boolean).slice(0, 4),
+          images: images.filter(Boolean).slice(0, 4),
           featured: !!row.featured,
           cc: row.cc,
           has_other_colors: !!row.has_other_colors,
@@ -487,31 +536,104 @@ function EditProduct({ row, onDone }: { row: AdminProduct; onDone: () => void })
 
   return (
     <div className="space-y-4 border border-border bg-card p-4">
-      {row.images && row.images.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto">
-          {row.images.slice(0, 4).map((src, i) => (
-            <img
-              key={i}
-              src={src}
-              alt={`${row.name} photo ${i + 1}`}
-              className="h-20 w-20 shrink-0 object-cover"
-              loading="lazy"
-            />
-          ))}
+      <div>
+        <div className="mb-1 text-[11px] uppercase tracking-widest text-muted-foreground">
+          Product photos
         </div>
-      )}
+        <div className="grid grid-cols-4 gap-2">
+          {[0, 1, 2, 3].map((i) => {
+            const src = images[i];
+            return (
+              <div
+                key={i}
+                className="relative aspect-square overflow-hidden border border-border bg-muted/40"
+              >
+                {src ? (
+                  <>
+                    <img
+                      src={src}
+                      alt={`${row.name} photo ${i + 1}`}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(i)}
+                      disabled={busy || uploadingIndex !== null}
+                      className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-white disabled:opacity-50"
+                      aria-label={`Remove photo ${i + 1}`}
+                    >
+                      <Icon name="close-outline" size={14} />
+                    </button>
+                    <label className="absolute inset-x-0 bottom-0 cursor-pointer bg-black/65 py-1 text-center text-[10px] font-bold uppercase tracking-wide text-white">
+                      Replace
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={busy || uploadingIndex !== null}
+                        onChange={(e) => {
+                          void uploadPhoto(i, e.target.files?.[0] ?? null);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  </>
+                ) : (
+                  <label className="absolute inset-0 grid cursor-pointer place-items-center text-center text-muted-foreground hover:bg-foreground/5">
+                    <span>
+                      <Icon name="cloud-upload-outline" size={20} />
+                      <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide">
+                        {i === 0 ? "Main photo" : "Add photo"}
+                      </span>
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={busy || uploadingIndex !== null}
+                      onChange={(e) => {
+                        void uploadPhoto(i, e.target.files?.[0] ?? null);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                )}
+                {uploadingIndex === i && (
+                  <div className="absolute inset-0 grid place-items-center bg-black/60 text-[10px] font-bold uppercase tracking-wide text-white">
+                    Uploading…
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Upload up to 4 photos. The first photo is the main one shown to customers. Tap Save changes
+          when you&apos;re done.
+        </p>
+      </div>
       <Field label="Product name" value={name} onChange={setName} />
       <Field label="Price (₦)" value={priceNaira} onChange={setPriceNaira} inputMode="numeric" />
       <Field label="Stock (number)" value={stock} onChange={setStock} inputMode="numeric" />
-      <label className="flex items-center gap-3 text-sm">
-        <input
-          type="checkbox"
-          checked={soldOut}
-          onChange={(e) => setSoldOut(e.target.checked)}
-          className="h-4 w-4 accent-[var(--primary)]"
-        />
-        Mark as sold out (customers will see a "Sold out" tag)
-      </label>
+      <div>
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={soldOut}
+            disabled={soldOutBusy}
+            onChange={(e) => void toggleSoldOut(e.target.checked)}
+            className="h-4 w-4 accent-[var(--primary)]"
+          />
+          {soldOutBusy
+            ? "Updating sold-out status…"
+            : "Mark as sold out (customers will see a \"Sold out\" tag)"}
+        </label>
+        {soldOutNote && <div className="mt-1 text-xs text-emerald-700">{soldOutNote}</div>}
+        <div className="mt-1 text-[11px] text-muted-foreground">
+          This saves immediately — you do not need to tap Save changes for it.
+        </div>
+      </div>
       <div>
         <div className="mb-1 text-[11px] uppercase tracking-widest text-muted-foreground">
           Description
@@ -526,10 +648,10 @@ function EditProduct({ row, onDone }: { row: AdminProduct; onDone: () => void })
       {error && <div className="text-sm text-destructive">{error}</div>}
       <button
         onClick={() => void save()}
-        disabled={busy}
+        disabled={busy || uploadingIndex !== null || soldOutBusy}
         className="btn-primary w-full disabled:opacity-60"
       >
-        {busy ? "Saving…" : "Save changes"}
+        {uploadingIndex !== null ? "Uploading photo…" : busy ? "Saving…" : "Save changes"}
       </button>
     </div>
   );

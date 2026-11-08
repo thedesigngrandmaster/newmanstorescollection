@@ -12,6 +12,7 @@ import {
   deleteAdminProduct,
   listAdminProducts,
   saveAdminProduct,
+  setAdminProductSoldOut,
 } from "@/lib/admin-products.functions";
 
 type Product = {
@@ -211,15 +212,36 @@ function ProductDrawer({
 }) {
   const [p, setP] = useState<Product>(product);
   const [busy, setBusy] = useState(false);
+  const [soldOutBusy, setSoldOutBusy] = useState(false);
   const saveProduct = useServerFn(saveAdminProduct);
+  const updateSoldOut = useServerFn(setAdminProductSoldOut);
   const qc = useQueryClient();
   const isNew = !p.id;
+
+  async function toggleSoldOut(next: boolean) {
+    setP((prev) => ({ ...prev, sold_out: next }));
+    if (!p.id) return;
+    setSoldOutBusy(true);
+    try {
+      await updateSoldOut({ data: { id: p.id, sold_out: next } });
+      toast.success(next ? "Marked as sold out" : "Made available again");
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    } catch (e) {
+      setP((prev) => ({ ...prev, sold_out: !next }));
+      toast.error(e instanceof Error ? e.message : "Could not update sold-out status");
+    } finally {
+      setSoldOutBusy(false);
+    }
+  }
 
   async function save() {
     if (!p.name.trim()) return toast.error("Name is required");
     const slug = p.slug?.trim() || slugify(p.name);
     const colors = uniqueColors(p.colors);
     if (p.has_other_colors && colors.length === 0) return toast.error("Add at least one color");
+    const sizes = Array.isArray(p.sizes) ? p.sizes : [];
+    const images = Array.isArray(p.images) ? p.images.filter(Boolean).slice(0, 4) : [];
     setBusy(true);
     const payload = {
       name: p.name.trim(),
@@ -230,10 +252,10 @@ function ProductDrawer({
       id: p.id,
       price_cents: Math.max(0, Math.round(Number(p.price_cents) || 0)),
       description: p.description || null,
-      sizes: p.sizes,
+      sizes,
       stock: Math.max(0, Math.round(Number(p.stock) || 0)),
       sold_out: p.sold_out,
-      images: p.images.filter(Boolean).slice(0, 4),
+      images,
       featured: p.featured,
       cc: p.cc?.trim() || null,
       has_other_colors: p.has_other_colors,
@@ -310,7 +332,7 @@ function ProductDrawer({
           </div>
           <TF
             label="Sizes (comma separated)"
-            value={p.sizes.join(",")}
+            value={(p.sizes ?? []).join(",")}
             onChange={(v) =>
               setP({
                 ...p,
@@ -344,20 +366,34 @@ function ProductDrawer({
             />
           </div>
           <ToggleRow
-            label="Mark as sold out"
+            label={soldOutBusy ? "Updating sold-out status…" : "Mark as sold out"}
             value={p.sold_out}
-            onChange={(v) => setP({ ...p, sold_out: v })}
+            onChange={(v) => void toggleSoldOut(v)}
+            disabled={busy || soldOutBusy}
           />
           <ToggleRow
             label="Featured"
             value={p.featured}
             onChange={(v) => setP({ ...p, featured: v })}
           />
-          <ImageUploader images={p.images} onChange={(imgs) => setP({ ...p, images: imgs })} />
+          <ImageUploader
+            images={p.images ?? []}
+            onChange={(imgs) => setP({ ...p, images: imgs })}
+          />
         </div>
         <div className="p-4 border-t border-border">
-          <button onClick={save} disabled={busy} className="btn-primary w-full">
-            {busy ? "Saving…" : isNew ? "Create product" : "Save changes"}
+          <button
+            onClick={save}
+            disabled={busy || soldOutBusy}
+            className="btn-primary w-full disabled:opacity-60"
+          >
+            {soldOutBusy
+              ? "Updating sold-out status…"
+              : busy
+                ? "Saving…"
+                : isNew
+                  ? "Create product"
+                  : "Save changes"}
           </button>
         </div>
       </motion.div>
@@ -568,18 +604,21 @@ function ToggleRow({
   label,
   value,
   onChange,
+  disabled,
 }: {
   label: string;
   value: boolean;
   onChange: (v: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
     <label className="flex items-center justify-between py-2">
       <span className="text-sm">{label}</span>
       <button
         type="button"
+        disabled={disabled}
         onClick={() => onChange(!value)}
-        className={`w-11 h-6 rounded-full relative transition-colors ${value ? "bg-primary" : "bg-foreground/20"}`}
+        className={`w-11 h-6 rounded-full relative transition-colors ${value ? "bg-primary" : "bg-foreground/20"} disabled:opacity-50`}
       >
         <span
           className={`absolute top-0.5 h-5 w-5 bg-white rounded-full transition-transform ${value ? "translate-x-5" : "translate-x-0.5"}`}

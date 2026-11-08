@@ -74,8 +74,40 @@ export const saveAdminProduct = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const deleteAdminProduct = createServerFn({ method: "POST" })
+/**
+ * Fast sold-out switch used by the simple dashboard. It only touches the
+ * `sold_out` column, so it still works even if another product field is
+ * temporarily invalid in the edit form.
+ */
+export const setAdminProductSoldOut = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .validator((data) =>
+    z
+      .object({
+        id: z.string().uuid("Invalid product ID"),
+        sold_out: z.boolean(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: allowed } = await context.supabase.rpc("has_permission", {
+      _user_id: context.userId,
+      _permission: "products",
+    });
+    if (!allowed) throw new Error("Forbidden");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: updated, error } = await supabaseAdmin
+      .from("products")
+      .update({ sold_out: data.sold_out })
+      .eq("id", data.id)
+      .select("id, sold_out")
+      .single();
+    if (error) throw error;
+    if (!updated) throw new Error("Product not found.");
+    return { ok: true, sold_out: updated.sold_out };
+  });
+
+export const deleteAdminProduct = createServerFn({ method: "POST" })  .middleware([requireSupabaseAuth])
   .validator((data) =>
     z
       .object({
